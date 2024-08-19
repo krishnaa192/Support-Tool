@@ -117,6 +117,10 @@ th .sticky-col:nth-child(4) {
   background-color: #ff9e0f;
   color: black;
 }
+.light-orange {
+  background-color: #ffcc00;
+  color: black;
+}
 
 /* 3D effect for table cells */
 .table td {
@@ -476,4 +480,23 @@ table td {
     z-index: 30;
     background-color: #2c2f33; /* Match table background */
   }
-  
+
+  .tab{
+    display: flex;
+    justify-content: center;
+    
+  }
+  .tab button {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    color: black;
+    padding: 10px 20px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .tab  button.active {
+    background-color: #007bff; /* Active button color */
+    color: white;
+    border-color: #007bff;
+  }

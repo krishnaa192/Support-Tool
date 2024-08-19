@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';  // Import Axios
 import './style.css';
 import Loading from './Loading';
+import InactiveData from './InactiveData';
 
 const DataList = () => {
   const [data, setData] = useState({});
@@ -12,6 +13,8 @@ const DataList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [blinkState, setBlinkState] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc', hour: null });
+  const [tab, setTab] = useState('all');
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,7 +23,7 @@ const DataList = () => {
           headers: { 'Content-Type': 'application/json' },
         });
 
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
@@ -104,10 +107,10 @@ const DataList = () => {
           if (shouldBlink) {
             newBlinkState[serviceId] = true;
             // Use setTimeout to ensure alert is shown after the component is loaded
-            setTimeout(() => {
-              alert(`Alert: Service ${serviceId} has no activity in the last two consecutive hours.`);
-            }
-              , 0.5 * 60 * 1000);
+            // setTimeout(() => {
+            //   alert(`Alert: Service ${serviceId} has no activity in the last two consecutive hours.`);
+            // }
+            //   , 0.5 * 60 * 1000);
 
             setTimeout(() => {
               setBlinkState(prevState => ({ ...prevState, [serviceId]: false }));
@@ -127,10 +130,11 @@ const DataList = () => {
 
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
-    if (ratio < 0.25) return 'red';
+    if (ratio <= 0.25) return 'red';
+    if (ratio > 0.25 && ratio < 0.4) return 'light-orange';
     if (ratio >= 0.4 && ratio <= 0.6) return 'orange';
     if (ratio > 0.6 && ratio <= 0.8) return 'light-green';
-    return 'dark-green';
+    if (ratio > 0.8) return 'dark-green';
   };
 
   const calculateRatio = (id, hour, type) => {
@@ -211,79 +215,97 @@ const DataList = () => {
                     onChange={e => setSearchQuery(e.target.value)}
                   />
                 </div>
+                <div className='tab'>
+                  <button onClick={() => setTab('all')} className={tab === 'all' ? 'active' : ''}>
+                    All Data
+                  </button>
+                  <button onClick={() => setTab('inactive')} className={tab === 'inactive' ? 'active' : ''}>
+                    Inactive Data
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="table-container">
-              <table className="table table-bordered">
-                <thead>
-                  <tr>
-                    <th className="sticky_head" rowSpan="2">Territory</th>
-                    <th className="sticky_head" rowSpan="2">Operator</th>
-                    <th className="sticky_head" rowSpan="2">App_serviceid</th>
-                    <th className="sticky_head" rowSpan="2">Biller</th>
-                    <th className="sticky_head" rowSpan="2">Servicename</th>
-                    <th className="sticky_head" rowSpan="2">Partner</th>
-                    <th className="sticky_head" rowSpan="2">Service_partner</th>
-                    {hours.map((hour, index) => (
-                      <th className='sticky_head' key={index} colSpan="2">
-                        {hour >= 0 && hour < 12 ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM` : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
-                      </th>
-                    ))}
-                  </tr>
-
-                  <tr className='hrs'>
-                    {hours.map((hour, index) => (
-                      <React.Fragment key={index}>
-                        <th onClick={() => requestSort(hour, 'pg')}>
-                          <span className='pg'>PG</span>
-                          <span className='pgs'>PGS</span>
-                        </th>
-                        <th onClick={() => requestSort(hour, 'pv')}>
-                          <span className='pg'>PV</span>
-                          <span className='pgs'>PVS</span>
-                        </th>
-                      </React.Fragment>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredServiceIds.map(serviceId => {
-                    const { info, hours: serviceHours } = data[serviceId];
-                    const rowClass = blinkState[serviceId] ? 'blinking' : '';
-                    return (
-                      <tr key={serviceId} className={rowClass}>
-                        <td className={rowClass}>{info.territory}</td>
-                        <td className={rowClass}>{info.operator}</td>
-                        <td className={rowClass}>{serviceId}</td>
-                        <td className={rowClass}>{info.billername}</td>
-                        <td className={rowClass}>{info.servicename}</td>
-                        <td className={rowClass}>{info.partner}</td>
-                        <td className={rowClass}>{info.service_partner}</td>
-                        {hours.map((hour, index) => {
-                          const hourData = serviceHours[hour] || {};
-                          return (
-                            <React.Fragment key={index}>
-                              <td className={`text-center ${getColorClass(hourData.pingenCountSuccess, hourData.pingenCount)}`}>
-                                <span className='pg'>{hourData.pingenCount}</span>
-                                <span className='pgs'>{hourData.pingenCountSuccess}</span>
-                              </td>
-                              <td className={`text-center ${getColorClass(hourData.pinverCountSuccess, hourData.pinverCount)}`}>
-                                <span className='pg'>{hourData.pinverCount}</span>
-                                <span className='pgs'>{hourData.pinverCountSuccess}</span>
-                              </td>
-                            </React.Fragment>
-                          );
-                        })}
+            <div>
+              {tab === 'all' && <div>
+                <div className="table-container">
+                  <table className="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th className="sticky_head" rowSpan="2">Territory</th>
+                        <th className="sticky_head" rowSpan="2">Operator</th>
+                        <th className="sticky_head" rowSpan="2">App_serviceid</th>
+                        <th className="sticky_head" rowSpan="2">Biller</th>
+                        <th className="sticky_head" rowSpan="2">Servicename</th>
+                        <th className="sticky_head" rowSpan="2">Partner</th>
+                        <th className="sticky_head" rowSpan="2">Service_partner</th>
+                        {hours.map((hour, index) => (
+                          <th className='sticky_head' key={index} colSpan="2">
+                            {hour >= 0 && hour < 12 ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM` : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
+                          </th>
+                        ))}
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                      <tr className='hrs'>
+                        {hours.map((hour, index) => (
+                          <React.Fragment key={index}>
+                            <th onClick={() => requestSort(hour, 'pg')}>
+                              <span className='pg'>PG</span>
+                              <span className='pgs'>PGS</span>
+                            </th>
+                            <th onClick={() => requestSort(hour, 'pv')}>
+                              <span className='pg'>PV</span>
+                              <span className='pgs'>PVS</span>
+                            </th>
+                          </React.Fragment>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredServiceIds.map(serviceId => {
+                        const { info, hours: serviceHours } = data[serviceId];
+                        const rowClass = blinkState[serviceId] ? 'blinking' : '';
+                        return (
+                          <tr key={serviceId} className={rowClass}>
+                            <td className={rowClass}>{info.territory}</td>
+                            <td className={rowClass}>{info.operator}</td>
+                            <td className={rowClass}>{serviceId}</td>
+                            <td className={rowClass}>{info.billername}</td>
+                            <td className={rowClass}>{info.servicename}</td>
+                            <td className={rowClass}>{info.partner}</td>
+                            <td className={rowClass}>{info.service_partner}</td>
+                            {hours.map((hour, index) => {
+                              const hourData = serviceHours[hour] || {};
+                              return (
+                                <React.Fragment key={index}>
+                                  <td className={`text-center ${getColorClass(hourData.pingenCountSuccess, hourData.pingenCount)}`}>
+                                    <span className='pg'>{hourData.pingenCount}</span>
+                                    <span className='pgs'>{hourData.pingenCountSuccess}</span>
+                                  </td>
+                                  <td className={`text-center ${getColorClass(hourData.pinverCountSuccess, hourData.pinverCount)}`}>
+                                    <span className='pg'>{hourData.pinverCount}</span>
+                                    <span className='pgs'>{hourData.pinverCountSuccess}</span>
+                                  </td>
+                                </React.Fragment>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              }
+              {tab === 'inactive' && <div>
+                <InactiveData />
+              </div>
+              }
             </div>
+
           </div>
         </div>
       </div>
     </div>
+
   );
 };
 
