@@ -3,6 +3,7 @@ import axios from 'axios';  // Import Axios
 import './style.css';
 import Loading from './Loading';
 import InactiveData from './InactiveData';
+import ApiRequest from './APi';
 
 const DataList = () => {
   const [data, setData] = useState({});
@@ -19,15 +20,8 @@ const DataList = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('', {
-          headers: { 'Content-Type': 'application/json' },
-        });
 
-        if (response.status !== 200) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = response.data;
+        const result = await ApiRequest();
         console.log('API Result:', result);
 
         const processedData = {};
@@ -198,113 +192,92 @@ const DataList = () => {
   }
 
   return (
-    <div className="billex-main">
-      <div className="table-one p-2">
-        <div>
-          <div className="p-2">
-            <div className="row" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', justifyContent: 'space-between', width: '90%' }}>
-              <h3 className="head2">Globocom Support Monitoring</h3>
-              <div className="custom-search-col">
-                <div className="control">
-                  <input
-                    className="search"
-                    placeholder="Search"
-                    type="text"
-                    name="search"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <div className='tab'>
-                  <button onClick={() => setTab('all')} className={tab === 'all' ? 'active' : ''}>
-                    All Data
-                  </button>
-                  <button onClick={() => setTab('inactive')} className={tab === 'inactive' ? 'active' : ''}>
-                    Inactive Data
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div>
-              {tab === 'all' && <div>
-                <div className="table-container">
-                  <table className="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th className="sticky_head" rowSpan="2">Territory</th>
-                        <th className="sticky_head" rowSpan="2">Operator</th>
-                        <th className="sticky_head" rowSpan="2">App_serviceid</th>
-                        <th className="sticky_head" rowSpan="2">Biller</th>
-                        <th className="sticky_head" rowSpan="2">Servicename</th>
-                        <th className="sticky_head" rowSpan="2">Partner</th>
-                        <th className="sticky_head" rowSpan="2">Service_partner</th>
-                        {hours.map((hour, index) => (
-                          <th className='sticky_head' key={index} colSpan="2">
-                            {hour >= 0 && hour < 12 ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM` : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
-                          </th>
-                        ))}
-                      </tr>
-                      <tr className='hrs'>
-                        {hours.map((hour, index) => (
-                          <React.Fragment key={index}>
-                            <th onClick={() => requestSort(hour, 'pg')}>
-                              <span className='pg'>PG</span>
-                              <span className='pgs'>PGS</span>
-                            </th>
-                            <th onClick={() => requestSort(hour, 'pv')}>
-                              <span className='pg'>PV</span>
-                              <span className='pgs'>PVS</span>
-                            </th>
-                          </React.Fragment>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredServiceIds.map(serviceId => {
-                        const { info, hours: serviceHours } = data[serviceId];
-                        const rowClass = blinkState[serviceId] ? 'blinking' : '';
-                        return (
-                          <tr key={serviceId} className={rowClass}>
-                            <td className={rowClass}>{info.territory}</td>
-                            <td className={rowClass}>{info.operator}</td>
-                            <td className={rowClass}>{serviceId}</td>
-                            <td className={rowClass}>{info.billername}</td>
-                            <td className={rowClass}>{info.servicename}</td>
-                            <td className={rowClass}>{info.partner}</td>
-                            <td className={rowClass}>{info.service_partner}</td>
-                            {hours.map((hour, index) => {
-                              const hourData = serviceHours[hour] || {};
-                              return (
-                                <React.Fragment key={index}>
-                                  <td className={`text-center ${getColorClass(hourData.pingenCountSuccess, hourData.pingenCount)}`}>
-                                    <span className='pg'>{hourData.pingenCount}</span>
-                                    <span className='pgs'>{hourData.pingenCountSuccess}</span>
-                                  </td>
-                                  <td className={`text-center ${getColorClass(hourData.pinverCountSuccess, hourData.pinverCount)}`}>
-                                    <span className='pg'>{hourData.pinverCount}</span>
-                                    <span className='pgs'>{hourData.pinverCountSuccess}</span>
-                                  </td>
-                                </React.Fragment>
-                              );
-                            })}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              }
-              {tab === 'inactive' && <div>
-                <InactiveData />
-              </div>
-              }
-            </div>
-
+    <>
+      <div className="custom-search-col">
+        <div className="control">
+          <div className='head'>
+            <h3 >All Data</h3>
           </div>
+          <input
+            className="search"
+            placeholder="Search"
+            type="text"
+            name="search"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+        </div>
+    
+        <div className="table-container">
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th className="sticky_head" rowSpan="2">Territory</th>
+                <th className="sticky_head" rowSpan="2">Operator</th>
+                <th className="sticky_head" rowSpan="2">App_serviceid</th>
+                <th className="sticky_head" rowSpan="2">Biller</th>
+                <th className="sticky_head" rowSpan="2">Servicename</th>
+                <th className="sticky_head" rowSpan="2">Partner</th>
+                <th className="sticky_head" rowSpan="2">Service_partner</th>
+                {hours.map((hour, index) => (
+                  <th className='sticky_head' key={index} colSpan="2">
+                    {hour >= 0 && hour < 12 ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM` : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
+                  </th>
+                ))}
+              </tr>
+              <tr className='hrs'>
+                {hours.map((hour, index) => (
+                  <React.Fragment key={index}>
+                    <th onClick={() => requestSort(hour, 'pg')}>
+                      <span className='pg'>PG</span>
+                      <span className='pgs'>PGS</span>
+                    </th>
+                    <th onClick={() => requestSort(hour, 'pv')}>
+                      <span className='pg'>PV</span>
+                      <span className='pgs'>PVS</span>
+                    </th>
+                  </React.Fragment>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredServiceIds.map(serviceId => {
+                const { info, hours: serviceHours } = data[serviceId];
+                const rowClass = blinkState[serviceId] ? 'blinking' : '';
+                return (
+                  <tr key={serviceId} className={rowClass}>
+                    <td className={rowClass}>{info.territory}</td>
+                    <td className={rowClass}>{info.operator}</td>
+                    <td className={rowClass}>{serviceId}</td>
+                    <td className={rowClass}>{info.billername}</td>
+                    <td className={rowClass}>{info.servicename}</td>
+                    <td className={rowClass}>{info.partner}</td>
+                    <td className={rowClass}>{info.service_partner}</td>
+                    {hours.map((hour, index) => {
+                      const hourData = serviceHours[hour] || {};
+                      return (
+                        <React.Fragment key={index}>
+                          <td className={`text-center ${getColorClass(hourData.pingenCountSuccess, hourData.pingenCount)}`}>
+                            <span className='pg'>{hourData.pingenCount}</span>
+                            <span className='pgs'>{hourData.pingenCountSuccess}</span>
+                          </td>
+                          <td className={`text-center ${getColorClass(hourData.pinverCountSuccess, hourData.pinverCount)}`}>
+                            <span className='pg'>{hourData.pinverCount}</span>
+                            <span className='pgs'>{hourData.pinverCountSuccess}</span>
+                          </td>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+      <div>
+            </div >
+      </>
 
   );
 };
