@@ -82,13 +82,16 @@ const Header = () => {
           }
 
           if (hourData.pingenCount >= 50 && hourData.pingenCountSuccess === 0) {
+            //add delay of 1 minute after loading ALERT message  should be displayed
+            setTimeout(() => {
             alert(`Service ID ${serviceId} has high pingen count with no success.`);
+            }, 10000);
             noTraffic = false; // Optional: change logic based on requirements
           }
 
           if (hourData.pinverCount >= 50 && hourData.pinverCountSuccess === 0) {
             alert(`Service ID ${serviceId} has high pinver count with no success.`);
-            noTraffic = false; // Optional: change logic based on requirements
+            noTraffic = false; 
           }
         }
 
