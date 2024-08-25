@@ -51,7 +51,7 @@ const GraphData = () => {
       <h1>Hourly Data</h1>
       <div className='data-card'>
         {selectedData && (
-          <div>
+          
             <ul>
               <li>Territory: {selectedData.info.territory || 'N/A'}</li>
               <li>Service Name: {selectedData.info.servicename || 'N/A'}</li>
@@ -60,7 +60,7 @@ const GraphData = () => {
               <li>Biller: {selectedData.info.billername || 'N/A'}</li>
               <li>Service Partner: {selectedData.info.service_partner || 'N/A'}</li>
             </ul>
-          </div>
+          
         )}
       </div>
       <div className='graphs'>

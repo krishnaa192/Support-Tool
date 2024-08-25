@@ -60,9 +60,7 @@ const InactiveData = () => {
       });
 
       const currentHour = new Date().getHours();
-      const SixHours = Array.from({ length: Math.min(currentHour + 1, 5) }, (_, i) =>
-        (currentHour - i + 24) % 24
-      );
+      const hourData = Array.from({ length: 24 }, (_, index) => (currentHour - index + 24) % 24);
 
       const newInactiveServices = Object.keys(inactiveData).filter(serviceId => {
         const hourData0 = inactiveData[serviceId].hours[(currentHour - 0 + 24) % 24];
@@ -80,7 +78,7 @@ const InactiveData = () => {
       setData(inactiveData);
       setInactiveServices(newInactiveServices);
       setServiceIds(Object.keys(inactiveData));
-      setHours(SixHours);
+      setHours(hourData);
     } catch (error) {
       setError("Failed to fetch data. Please try again later.");
     }
@@ -207,10 +205,10 @@ const InactiveData = () => {
       <table className="table table-bordered">
         <thead>
           <tr>
-            <th className="sticky_head" rowSpan="2">Territory</th>
+            <th className="sticky_head-horizontal-1" rowSpan="2">Territory</th>
             <th className="sticky_head" rowSpan="2">Operator</th>
-            <th className="sticky_head" rowSpan="2">App_serviceid</th>
-            <th className="sticky_head" rowSpan="2">Biller</th>
+            <th className="sticky_head-horizontal-2" rowSpan="2">App_serviceid</th>
+            <th className="sticky_head-horizontal-3" rowSpan="2">Biller</th>
             <th className="sticky_head" rowSpan="2">Servicename</th>
             <th className="sticky_head" rowSpan="2">Partner</th>
             <th className="sticky_head" rowSpan="2">Service_partner</th>
@@ -242,17 +240,15 @@ const InactiveData = () => {
 
               return (
                 <tr key={serviceId}>
-                  <td>{info?.territory || '-'}</td>
+                  <td className='sticky-1'>{info?.territory || '-'}</td>
                   <td>{info?.operator || '-'}</td>
                   <td className="service-id-cell">
                     {serviceId}
-                    <div className="dropdown-menu">
-                      <Link to={`/graph/${serviceId}`} className="hover-button">
-                        View Graph
-                      </Link>
-                    </div>
+                    <Link to={`/graph/${serviceId}`} className="hover-button">
+        <i className="fas fa-chart-line"></i> {/* Font Awesome icon */}
+      </Link>
                   </td>
-                  <td>{info?.billername || '-'}</td>
+                  <td className='sticky-3'>{info?.billername || '-'}</td>
                   <td>{info?.servicename || '-'}</td>
                   <td>{info?.partner || '-'}</td>
                   <td>{info?.service_partner || '-'}</td>

@@ -70,14 +70,13 @@ const DataList = () => {
         });
 
         const currentHour = new Date().getHours();
-        const sixHours = [];
-        for (let i = 0; i < 6; i++) {
-          sixHours.push((currentHour - i + 24) % 24);
-        }
+       //show all data from 12 AM to current hour
+
+       const hourData = Array.from({ length: 24 }, (_, index) => (currentHour - index + 24) % 24);
 
         setData(processedData);
         setServiceIds(Object.keys(processedData));
-        setHours(sixHours);
+        setHours(hourData);
         setLoading(false);
 
         const now = Date.now();
@@ -308,10 +307,12 @@ const DataList = () => {
         <table className="table table-bordered">
           <thead>
             <tr>
-              <th className="sticky_head" rowSpan="2">Territory</th>
+              {/* add button for graph */}
+              
+              <th className="sticky_head-horizontal-1" rowSpan="2">Territory</th>
               <th className="sticky_head" rowSpan="2">Operator</th>
-              <th className="sticky_head" rowSpan="2">App_serviceid</th>
-              <th className="sticky_head" rowSpan="2">Biller</th>
+              <th className="sticky_head-horizontal-2" rowSpan="2">App_serviceid</th>
+              <th className="sticky_head-horizontal-3" rowSpan="2">Biller</th>
               <th className="sticky_head" rowSpan="2">Servicename</th>
               <th className="sticky_head" rowSpan="2">Partner</th>
               <th className="sticky_head" rowSpan="2">Service_partner</th>
@@ -345,17 +346,15 @@ const DataList = () => {
                 const rowClass = blinkState[serviceId] ? 'blinking' : '';
                 return (
                   <tr key={serviceId} className={rowClass}>
-                    <td>{info?.territory || '-'}</td>
+                    <td className='sticky-1'>{info?.territory || '-'}</td>
                     <td>{info?.operator || '-'}</td>
                     <td className="service-id-cell">
-                      {serviceId}
-                      <div className="dropdown-menu">
-                        <Link to={`/graph/${serviceId}`} className="hover-button">
-                          View Graph
-                        </Link>
-                      </div>
-                    </td>
-                    <td>{info?.billername || '-'}</td>
+      {serviceId}
+      <Link to={`/graph/${serviceId}`} className="hover-button">
+        <i className="fas fa-chart-line"></i> {/* Font Awesome icon */}
+      </Link>
+    </td>
+                    <td className='sticky-3'>{info?.billername || '-'}</td>
                     <td>{info?.servicename || '-'}</td>
                     <td>{info?.partner || '-'}</td>
                     <td>{info?.service_partner || '-'}</td>
