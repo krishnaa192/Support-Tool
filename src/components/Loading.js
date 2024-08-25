@@ -1,7 +1,7 @@
 
 import React from 'react'
 import { LifeLine } from "react-loading-indicators";
-import './Loading.css'
+import '../css/Loading.css'
 
 function Loading() {
   return (

@@ -21,8 +21,8 @@ body {
   display: block;
   position: sticky;
   right:0%;
-  width: 15vw;
-  height: 30px !important;
+  width: 16vw;
+  height: 41px !important;
   padding: 10px;
   height: 12vh;
   border: 1px solid #ddd;
@@ -41,11 +41,18 @@ body {
   margin-left: 15px;
 }
 .control {
-  margin-top: 0px;
-  display: flex;
+
+    padding-top: 2px !important;
+    display: flex;
     justify-content: space-between;
-    align-items: flex-end;
 }
+#service-partner-filter{
+ padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+
 
 /* Table container */
 .table-container {
@@ -214,7 +221,7 @@ button:hover i {
 .pgs,
 .pg {
   display: inline-block;
-  width: 34px;
+  width: 30px;
   vertical-align: middle;
  
   background-color: white;
@@ -224,7 +231,7 @@ button:hover i {
   color: black;
   text-align: center;
   border-radius: 5px;
-
+  padding: 3px 0px;
   align-items: center;
   vertical-align: middle;
 }
@@ -375,6 +382,7 @@ table td {
   border: 1px solid #ddd;
   text-align: center;
   vertical-align: middle;
+  
 }
 
 
@@ -386,7 +394,7 @@ table td {
   text-align: center;
   background-color: #2c2f33; /* Match the table background */
   color: white;
-  padding: 0px;
+ 
 }
 
 /* Ensure headers do not overlap */
@@ -469,7 +477,7 @@ table td {
     position: sticky;
     left: 0;
     z-index: 10;
-    background-color: #2c2f33; /* Match table background */
+   /* Match table background */
   }
   
   .table td:nth-child(1),td:nth-child(2),td:nth-child(3) {
@@ -482,7 +490,7 @@ table td {
     position: sticky;
     left: 127.75px; /* Adjust as needed */
     z-index: 20;
-    background-color: #2c2f33; /* Match table background */
+   /* Match table background */
   }
   
   .table td:nth-child(4),
@@ -490,16 +498,16 @@ table td {
     position: sticky;
     left: 297px; /* Adjust as needed */
     z-index: 30;
-    background-color: #2c2f33; /* Match table background */
+  /* Match table background */
   }
 
-  .tab{
+  .tabs{
     display: flex;
     justify-content: center;
     height: 45px;
     
   }
-  .tab button {
+  .tabs button {
     background-color: #f8f9fa;
     border: 1px solid #ddd;
     color: black;
@@ -508,7 +516,7 @@ table td {
     cursor: pointer;
     border-radius: 4px;
   }
-  .tab  button.active {
+  .tabs  button.active {
     background-color: #007bff; /* Active button color */
     color: white;
     border-color: #007bff;
@@ -519,3 +527,51 @@ table td {
   
 
   */
+
+  /* hovereable butto */
+  /* Updated CSS in style.css */
+
+.service-id-cell {
+  position: relative;
+}
+
+.hover-button {
+  display: inline-block;
+  padding: 4px 8px;
+  margin-left: 8px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1; /* Make sure the button is above other elements */
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 1000; /* Ensure dropdown menu is above other elements */
+  top: 0%;
+  left: 0;
+  min-width: 160px;
+  padding: 0; /* Remove extra padding */
+  height: 50px;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #333;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f1f1f1;
+}
+
+.service-id-cell:hover .dropdown-menu {
+  display: block;
+}

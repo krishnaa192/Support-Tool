@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const ApiRequest =  async () => {
     try {
-        const response = await axios.get('', {
+        const response = await axios.get('https://wap.matrixads.in/mglobopay/getSupportMonitorData', {
             headers: { 'Content-Type': 'application/json' },
         });
 
