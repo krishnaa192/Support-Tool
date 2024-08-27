@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ApiRequest from '../APi'; // Ensure this path is correct
-import Loading from './Loading';
+
 import { Link } from 'react-router-dom';
 import '../css/style.css';
 
 const InactiveData = () => {
   const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
   const [hours, setHours] = useState([]);
   const [serviceIds, setServiceIds] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc', hour: null });
@@ -17,7 +16,7 @@ const InactiveData = () => {
   const [servicePartnerFilter, setServicePartnerFilter] = useState('all');
 
   const fetchData = useCallback(async () => {
-    try {
+   
       const result = await ApiRequest();
       console.log("API Result_inactive:", result);
 
@@ -79,10 +78,8 @@ const InactiveData = () => {
       setInactiveServices(newInactiveServices);
       setServiceIds(Object.keys(inactiveData));
       setHours(hourData);
-    } catch (error) {
-      setError("Failed to fetch data. Please try again later.");
-    }
-  }, []);
+    } 
+  , []);
 
   useEffect(() => {
     fetchData();
@@ -167,13 +164,7 @@ const InactiveData = () => {
     return filterServiceProviders(filteredByQuery, servicePartnerFilter);
   }, [searchQuery, sortedServiceIds, data, servicePartnerFilter, filterServiceProviders]);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!data) {
-    return <div><Loading /></div>;
-  }
+ 
 
   return (
     <div className='table-container'>

@@ -49,6 +49,9 @@ const GraphData = () => {
   return (
     <div className='graph-data'>
       <h1>Hourly Data</h1>
+      <div className='back-button'>
+        <a href='/'>Back</a>
+      </div>
       <div className='data-card'>
         {selectedData && (
           

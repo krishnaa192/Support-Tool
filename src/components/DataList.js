@@ -3,29 +3,26 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/style.css';
-import Loading from './Loading';
+import { FixedSizeList as List } from 'react-window';
+
 import ApiRequest from '../APi';
 
 const DataList = () => {
   const [data, setData] = useState({});
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [blinkState, setBlinkState] = useState({});
-  const [lastBlinkTime, setLastBlinkTime] = useState({});
+
+
+  const [sortConfig, setSortConfig] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [servicePartnerFilter, setServicePartnerFilter] = useState('all');
-  const [sortConfig, setSortConfig] = useState({ hour: null, key: null, direction: 'asc' });
+  const [adPartnerFilter, setAdPartnerFilter] = useState('All Partners');
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
         const result = await ApiRequest();
         console.log("All Data", result);
-
-        const processedData = {};
-        result.forEach(item => {
+        const processedData = result.reduce((acc, item) => {
           const {
             app_serviceid,
             territory,
@@ -35,22 +32,14 @@ const DataList = () => {
             service_partner,
             partner,
             time,
-            pingenCount,
-            pingenCountSuccess,
-            pinverCount,
-            pinverCountSuccess
+            pingenCount = 0,
+            pingenCountSuccess = 0,
+            pinverCount = 0,
+            pinverCountSuccess = 0,
           } = item;
-
-          if (!processedData[app_serviceid]) {
-            processedData[app_serviceid] = {
-              info: {
-                territory: territory || '',
-                servicename: servicename || '',
-                operator: operator || '',
-                partner: partner || '',
-                billername: billername || '',
-                service_partner: service_partner || ''
-              },
+          if (!acc[app_serviceid]) {
+            acc[app_serviceid] = {
+              info: { territory, servicename, operator, partner, billername, service_partner },
               hours: Array.from({ length: 24 }, () => ({
                 pingenCount: 0,
                 pingenCountSuccess: 0,
@@ -59,117 +48,24 @@ const DataList = () => {
               })),
             };
           }
-
           const hour = parseInt(time, 10);
-          processedData[app_serviceid].hours[hour] = {
-            pingenCount: pingenCount || 0,
-            pingenCountSuccess: pingenCountSuccess || 0,
-            pinverCount: pinverCount || 0,
-            pinverCountSuccess: pinverCountSuccess || 0,
+          acc[app_serviceid].hours[hour] = {
+            pingenCount,
+            pingenCountSuccess,
+            pinverCount,
+            pinverCountSuccess,
           };
-        });
-
-        const currentHour = new Date().getHours();
-       //show all data from 12 AM to current hour
-
-       const hourData = Array.from({ length: 24 }, (_, index) => (currentHour - index + 24) % 24);
-
+          return acc;
+        }, {});
+        const currentHour = new Date().getHours();  
+       const hourData = Array.from({ length: currentHour + 1 }, (_, index) => (currentHour - index + 24) % 24);
+      
         setData(processedData);
         setServiceIds(Object.keys(processedData));
         setHours(hourData);
-        setLoading(false);
-
-        const now = Date.now();
-        const newBlinkState = { ...blinkState };
-        const newLastBlinkTime = { ...lastBlinkTime };
-
-        Object.keys(processedData).forEach(serviceId => {
-          const serviceHours = processedData[serviceId].hours;
-          const hourData1 = serviceHours[(currentHour - 1 + 24) % 24];
-          const hourData0 = serviceHours[currentHour];
-          let shouldBlink = false;
-
-          if (
-            hourData1.pingenCount === 0 &&
-            hourData1.pingenCountSuccess === 0 &&
-            hourData1.pinverCount === 0 &&
-            hourData1.pinverCountSuccess === 0 &&
-            hourData0.pingenCount === 0 &&
-            hourData0.pingenCountSuccess === 0 &&
-            hourData0.pinverCount === 0 &&
-            hourData0.pinverCountSuccess === 0
-          ) {
-            shouldBlink = true;
-          }
-
-          if (
-            (hourData1.pingenCount >= 50 && hourData1.pingenCountSuccess === 0) ||
-            (hourData1.pinverCount >= 50 && hourData1.pinverCountSuccess === 0)
-          ) {
-            if (
-              hourData1.pingenCount > 0 ||
-              hourData1.pingenCountSuccess > 0 ||
-              hourData1.pinverCount > 0 ||
-              hourData1.pinverCountSuccess > 0 ||
-              hourData0.pingenCount > 0 ||
-              hourData0.pingenCountSuccess > 0 ||
-              hourData0.pinverCount > 0 ||
-              hourData0.pinverCountSuccess > 0
-            ) {
-              newBlinkState[serviceId] = false;
-            }
-          }
-
-          if (shouldBlink) {
-            const lastBlink = newLastBlinkTime[serviceId] || 0;
-            const thirtyMinutes = 30 * 60 * 1000;
-
-            if (now - lastBlink > thirtyMinutes) {
-              newBlinkState[serviceId] = true;
-              newLastBlinkTime[serviceId] = now;
-
-              // Schedule to stop blinking after 15 minutes
-              setTimeout(() => {
-                setBlinkState(prevState => ({ ...prevState, [serviceId]: false }));
-              }, 15 * 60 * 1000); // 15 minutes
-            }
-          }
-        });
-
-        setBlinkState(newBlinkState);
-        setLastBlinkTime(newLastBlinkTime);
-
-      } catch (error) {
-        setError(error.message);
-        setLoading(false);
       }
-    };
-
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Fetch data only once
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const now = Date.now();
-      const newBlinkState = { ...blinkState };
-      const newLastBlinkTime = { ...lastBlinkTime };
-
-      Object.keys(blinkState).forEach(serviceId => {
-        const lastBlink = newLastBlinkTime[serviceId] || 0;
-        const thirtyMinutes = 30 * 60 * 1000;
-
-        if (now - lastBlink > thirtyMinutes) {
-          newBlinkState[serviceId] = false;
-        }
-      });
-
-      setBlinkState(newBlinkState);
-      setLastBlinkTime(newLastBlinkTime);
-    }, 30 * 60 * 1000); // Check every 30 minutes
-
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, [blinkState, lastBlinkTime]); // Include all state dependencies
 
   const filterServiceProviders = useCallback((serviceProviders, filter) => {
     if (filter === 'all') return serviceProviders;
@@ -181,7 +77,17 @@ const DataList = () => {
       if (filter === 'Tiara') return partner === 'TIARA';
       if (filter === 'Novustech') return partner === 'Novustech';
       if (filter === 'Reseller') return !['globocom', 'TIARA', 'Novustech'].includes(partner);
+      return false;
+    });
+  }, [data]);
 
+  const adpartner = useCallback((partners, filter) => {
+    if (filter === 'All Partners') return partners;
+    return partners.filter(partner => {
+      const partnerInfo = data[partner]?.info?.partner;
+      if (!partnerInfo) return false;
+      if (filter === 'InHouseGoogle') return partnerInfo === 'InHouseGoogle';
+      if (filter === 'NewJGoogle') return partnerInfo === 'NewJGoogle' || partnerInfo === 'NewJGoogle-New';
       return false;
     });
   }, [data]);
@@ -195,13 +101,11 @@ const DataList = () => {
     if (ratio > 0.8) return 'dark-green';
     return '';
   };
-
   const calculateRatio = useCallback((id, hour, type) => {
     const service = data[id];
     if (!service) return 0;
     const hourData = service.hours[hour];
     if (!hourData) return 0;
-
     if (type === 'pg') {
       return hourData.pingenCount === 0 ? 0 : hourData.pingenCountSuccess / hourData.pingenCount;
     } else if (type === 'pv') {
@@ -220,13 +124,11 @@ const DataList = () => {
       return { hour, key, direction };
     });
   };
-
   const sortedServiceIds = useMemo(() => {
     if (!sortConfig.key) return serviceIds;
     return [...serviceIds].sort((a, b) => {
       const ratioA = calculateRatio(a, sortConfig.hour, sortConfig.key);
       const ratioB = calculateRatio(b, sortConfig.hour, sortConfig.key);
-
       if (ratioA < ratioB) {
         return sortConfig.direction === 'asc' ? -1 : 1;
       }
@@ -247,44 +149,24 @@ const DataList = () => {
         (info?.servicename || '').toLowerCase().includes(query) ||
         (info?.operator || '').toLowerCase().includes(query) ||
         (info?.partner || '').toLowerCase().includes(query) ||
-        (info?.service_partner || '').toLowerCase().includes(query) ||
-        (info?.billername || '').toLowerCase().includes(query)
+        (info?.billername || '').toLowerCase().includes(query)||
+        (info?.service_partner || '').toLowerCase().includes(query)
       );
     });
-    return filterServiceProviders(filteredByQuery, servicePartnerFilter);
-  }, [sortedServiceIds, searchQuery, data, filterServiceProviders, servicePartnerFilter]);
 
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
+    const filteredByServicePartner = filterServiceProviders(filteredByQuery, servicePartnerFilter);
+    return adpartner(filteredByServicePartner, adPartnerFilter);
+  }, [sortedServiceIds, searchQuery, servicePartnerFilter, adPartnerFilter, data, filterServiceProviders, adpartner]);
 
-  const handleServicePartnerFilterChange = (event) => {
-    setServicePartnerFilter(event.target.value);
-  };
-
-  if (loading) {
-    return (
-      <div>
-        <Loading />
-      </div>
-    );
-  }
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  const servicePartners = Array.from(new Set(
-    Object.values(data).map(item => item.info.service_partner)
-  )).filter(Boolean);
 
   return (
     <div className="custom-search-col">
-      <div className="control">
-        <div className="filter-controls">
+    <div className="control">
+    <div className="filter-controls">
           <select
             id="service-partner-filter"
             value={servicePartnerFilter}
-            onChange={handleServicePartnerFilterChange}
+            onChange={e => setServicePartnerFilter(e.target.value)}
           >
             <option value="all">All</option>
             <option value="Globocom">Globocom</option>
@@ -292,116 +174,126 @@ const DataList = () => {
             <option value="Novustech">Novustech</option>
             <option value="Reseller">Reseller</option>
           </select>
+          <select
+          id="ad-partner-filter"
+          value={adPartnerFilter}
+          onChange={e => setAdPartnerFilter(e.target.value)}
+          className="ad-partner-filter"
+        >
+          <option value="All Partners">All Partners</option>
+          <option value="InHouseGoogle">InHouseGoogle</option>
+          <option value="NewJGoogle">NewJGoogle</option>
+        </select>
         </div>
         <input
-          className="search"
-          placeholder="Search"
           type="text"
-          name="search"
+          placeholder="Search..."
           value={searchQuery}
-          onChange={handleSearchChange}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="search-input"
         />
       </div>
-
       <div className="table-container">
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              {/* add button for graph */}
-              
-              <th className="sticky_head-horizontal-1" rowSpan="2">Territory</th>
-              <th className="sticky_head" rowSpan="2">Operator</th>
-              <th className="sticky_head-horizontal-2" rowSpan="2">App_serviceid</th>
-              <th className="sticky_head-horizontal-3" rowSpan="2">Biller</th>
-              <th className="sticky_head" rowSpan="2">Servicename</th>
-              <th className="sticky_head" rowSpan="2">Partner</th>
-              <th className="sticky_head" rowSpan="2">Service_partner</th>
-              {hours.map((hour, index) => (
-                <th className="sticky_head" key={index} colSpan="2">
-                  {hour >= 0 && hour < 12
-                    ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
-                    : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
+      <table className="table table-bordered">
+        <thead>
+          <tr>
+            {/* add button for graph */}
+            <th className="sticky_head-horizontal-1" rowSpan="2">Territory</th>
+            <th className="sticky_head" rowSpan="2">Operator</th>
+            <th className="sticky_head-horizontal-2" rowSpan="2">App_serviceid</th>
+            <th className="sticky_head-horizontal-3" rowSpan="2">Biller</th>
+            <th className="sticky_head" rowSpan="2">Servicename</th>
+            <th className="sticky_head" rowSpan="2">Partner</th>
+            <th className="sticky_head" rowSpan="2">Service_partner</th>
+            {hours.map((hour, index) => (
+              <th className="sticky_head" key={index} colSpan="2">
+                {hour >= 0 && hour < 12
+                  ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
+                  : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
+              </th>
+            ))}
+          </tr>
+          <tr className="hrs">
+            {hours.map((hour, index) => (
+              <React.Fragment key={index}>
+                <th onClick={() => requestSort(hour, 'pg')}>
+                  <span className="pg">PG</span>
+                  <span className="pgs">PGS</span>
                 </th>
-              ))}
+                <th onClick={() => requestSort(hour, 'pv')}>
+                  <span className="pg">PV</span>
+                  <span className="pgs">PVS</span>
+                </th>
+              </React.Fragment>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          
+          {filteredServiceIds.length > 0 ? (
+            filteredServiceIds.map(serviceId => {
+              const { info, hours: serviceHours } = data[serviceId] || {};
+          
+              return (
+                <tr key={serviceId} >
+                  <td className='sticky-1'>{info?.territory || '-'}</td>
+                  <td>{info?.operator || '-'}</td>
+                  <td className="service-id-cell">
+                    {serviceId}
+                    <Link to={`/graph/${serviceId}`} className="hover-button">
+                      <i className="fas fa-chart-line"></i> {/* Font Awesome icon */}
+                    </Link>
+                  </td>
+                  <td className='sticky-3'>{info?.billername || '-'}</td>
+                  <td>{info?.servicename || '-'}</td>
+                  <td>{info?.partner || '-'}</td>
+                  <td>{info?.service_partner || '-'}</td>
+                  {hours.map((hour, index) => {
+                    const hourData = serviceHours[hour] || {};
+                    return (
+                      <React.Fragment key={index}>
+                        <td
+                          className={`text-center ${getColorClass(
+                            hourData.pingenCountSuccess,
+                            hourData.pingenCount
+                          )}`}
+                        >
+                          <span className="pg">{hourData.pingenCount}</span>
+                          <span className="pgs">
+                            {hourData.pingenCountSuccess}
+                          </span>
+                        </td>
+                        <td
+                          className={`text-center ${getColorClass(
+                            hourData.pinverCountSuccess,
+                            hourData.pinverCount
+                          )}`}
+                        >
+                          <span className="pg">{hourData.pinverCount}</span>
+                          <span className="pgs">
+                            {hourData.pinverCountSuccess}
+                          </span>
+                        </td>
+                      </React.Fragment>
+                    );
+                  })}
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan={7 + hours.length * 2} className="text-center">
+                No data Found
+              </td>
             </tr>
-            <tr className="hrs">
-              {hours.map((hour, index) => (
-                <React.Fragment key={index}>
-                  <th onClick={() => requestSort(hour, 'pg')}>
-                    <span className="pg">PG</span>
-                    <span className="pgs">PGS</span>
-                  </th>
-                  <th onClick={() => requestSort(hour, 'pv')}>
-                    <span className="pg">PV</span>
-                    <span className="pgs">PVS</span>
-                  </th>
-                </React.Fragment>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredServiceIds.length > 0 ? (
-              filteredServiceIds.map(serviceId => {
-                const { info, hours: serviceHours } = data[serviceId] || {};
-                const rowClass = blinkState[serviceId] ? 'blinking' : '';
-                return (
-                  <tr key={serviceId} className={rowClass}>
-                    <td className='sticky-1'>{info?.territory || '-'}</td>
-                    <td>{info?.operator || '-'}</td>
-                    <td className="service-id-cell">
-      {serviceId}
-      <Link to={`/graph/${serviceId}`} className="hover-button">
-        <i className="fas fa-chart-line"></i> {/* Font Awesome icon */}
-      </Link>
-    </td>
-                    <td className='sticky-3'>{info?.billername || '-'}</td>
-                    <td>{info?.servicename || '-'}</td>
-                    <td>{info?.partner || '-'}</td>
-                    <td>{info?.service_partner || '-'}</td>
-                    {hours.map((hour, index) => {
-                      const hourData = serviceHours[hour] || {};
-                      return (
-                        <React.Fragment key={index}>
-                          <td
-                            className={`text-center ${getColorClass(
-                              hourData.pingenCountSuccess,
-                              hourData.pingenCount
-                            )}`}
-                          >
-                            <span className="pg">{hourData.pingenCount}</span>
-                            <span className="pgs">
-                              {hourData.pingenCountSuccess}
-                            </span>
-                          </td>
-                          <td
-                            className={`text-center ${getColorClass(
-                              hourData.pinverCountSuccess,
-                              hourData.pinverCount
-                            )}`}
-                          >
-                            <span className="pg">{hourData.pinverCount}</span>
-                            <span className="pgs">
-                              {hourData.pinverCountSuccess}
-                            </span>
-                          </td>
-                        </React.Fragment>
-                      );
-                    })}
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={7 + hours.length * 2} className="text-center">
-                  No data Found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          )}
+        </tbody>
+      </table>
     </div>
-  );
+    </div>
+  
+
+);
 };
 
 export default DataList;

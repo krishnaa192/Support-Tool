@@ -51,6 +51,11 @@ body {
   border: 1px solid #ddd;
   border-radius: 6px;
 }
+#ad-partner-filter{
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
 
 
 
@@ -390,11 +395,9 @@ table td {
 
 .hrs {
     position: sticky;
-    top: 4.4%;
-    z-index: 1034 !important;
-    
+    top: 20px;
+    z-index: 1 !important;
 }
-
 .sticky_head{
     position: sticky;
     top: 0;
@@ -547,26 +550,26 @@ td {
 
 .sticky-3 {
   position: sticky;
-  left: 187px;
+  left: 167px;
   background-color:#23272a;
   z-index: 10;
 }
 .service-id-cell{
   position: sticky;
-  left: 80px;
+  left: 70px;
   background-color: #23272a;
   z-index: 10;
 }
  th.sticky_head-horizontal-2{
   position: sticky;
-  left: 80px;
+  left: 70px;
   background-color:#23272a;
   z-index: 10000 !important;
 }
 
  th.sticky_head-horizontal-3{
   position: sticky;
-  left: 187px;
+  left: 167px;
   background-color:#23272a;
   z-index: 10000! important;
 }
@@ -583,10 +586,7 @@ td {
 }
 
 
-.hrs{
-  z-index: 1 !important;
 
-}
 /* Ensure the dropdown menu appears above other elements */
 .hover-button {
   display: inline-block;
@@ -639,4 +639,8 @@ td {
 /* Show dropdown menu on hover */
 .hover-button:hover + .dropdown-menu {
   display: block;
+}
+
+.table th{
+  padding:3px 0px 3px 0px !important;
 }

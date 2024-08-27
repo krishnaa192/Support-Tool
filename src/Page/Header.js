@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import DataList from '../components/DataList';
 import InactiveData from '../components/InactiveData';
 import { fetchDataAndCount, processDataByServiceId } from '../utils';
-import Loading from '../components/Loading';
+
 import '../css/style.css';
 import '../header.css';
 
@@ -20,7 +20,7 @@ const Header = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      try {
+    
         const {
           data,
           totalCount,
@@ -35,90 +35,71 @@ const Header = () => {
         setActiveIdsCount(activeCount);
         setNoTrafficIdsCount(noTrafficCount);
         setLoading(false);
-      } catch (error) {
-        console.error("Error loading data:", error);
-        setError(error.message);
-        setLoading(false);
-      }
-    };
+      } 
+   
 
     loadData();
   }, []);
 
   useEffect(() => {
     if (loading) return;
-
+  
     const processData = processDataByServiceId(data);
     
     const checkAlerts = async () => {
       const currentTime = new Date().getTime();
       const lastCheckTime = localStorage.getItem('lastCheckTime');
       const interval = 45 * 60 * 1000; // 45 minutes in milliseconds
-
+  
       if (lastCheckTime && currentTime - lastCheckTime < interval) {
         // Skip checking if it hasn't been 45 minutes since the last check
         return;
       }
-
+  
       const currentHour = new Date().getHours();
-      const alertServiceIds = [];
-
+      let alertTriggered = false;
+  
       Object.keys(processData).forEach(serviceId => {
         const serviceHours = processData[serviceId]?.hours || [];
-        let noTraffic = true;
-
+  
         for (let i = 0; i < 2; i++) {
           const hourIndex = (currentHour - i + 24) % 24;
-          const hourData = serviceHours[hourIndex] || {}; // Initialize hourData here
-
-          if (
-            hourData.pingenCount > 0 ||
-            hourData.pingenCountSuccess > 0 ||
-            hourData.pinverCount > 0 ||
-            hourData.pinverCountSuccess > 0
-          ) {
-            noTraffic = false;
-            break;
-          }
-
+          const hourData = serviceHours[hourIndex] || {};
+  
           if (hourData.pingenCount >= 50 && hourData.pingenCountSuccess === 0) {
-            //add delay of 1 minute after loading ALERT message  should be displayed
-            setTimeout(() => {
-            alert(`Service ID ${serviceId} has high pingen count with no success.`);
-            }, 10000);
-            noTraffic = false; // Optional: change logic based on requirements
+            // Display alert after a 1-minute delay
+            if (!alertTriggered) {
+              setTimeout(() => {
+                alert(`Service ID ${serviceId} has high pingen count with no success.`);
+              }, 60000); // 1 minute in milliseconds
+              alertTriggered = true;
+            }
           }
-
+  
           if (hourData.pinverCount >= 50 && hourData.pinverCountSuccess === 0) {
-            alert(`Service ID ${serviceId} has high pinver count with no success.`);
-            noTraffic = false; 
+            // Display alert after a 1-minute delay
+            if (!alertTriggered) {
+              setTimeout(() => {
+                alert(`Service ID ${serviceId} has high pinver count with no success.`);
+              }, 60000); // 1 minute in milliseconds
+              alertTriggered = true;
+            }
           }
-        }
-
-        if (noTraffic) {
-          alertServiceIds.push(serviceId);
         }
       });
-
-      if (alertServiceIds.length > 0) {
-        alertServiceIds.forEach(id => {
-          alert(`Service ID ${id} has no traffic for the last two hours.`);
-        });
-      }
-
-      // Update the last check time
-      localStorage.setItem('lastCheckTime', currentTime);
+  
+      // Update last check time in localStorage
+      localStorage.setItem('lastCheckTime', currentTime.toString());
     };
-
-    checkAlerts(); // Initial check
+  
+    // Run checkAlerts immediately and set an interval for it
+    checkAlerts();
     const intervalId = setInterval(checkAlerts, 45 * 60 * 1000); // Check every 45 minutes
-
+  
     return () => clearInterval(intervalId); // Cleanup on unmount
-
+  
   }, [loading, data]);
 
-  if (loading) return <div><Loading/></div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <>
