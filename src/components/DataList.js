@@ -11,15 +11,18 @@ const DataList = () => {
   const [data, setData] = useState({});
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
-
-
-  const [sortConfig, setSortConfig] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
+  const [servicenameFilter, setServicenameFilter] = useState('All Services');
+  const [billerFilter, setBillerFilter] = useState('All Billers');
+  const [operatorFilter, setOperatorFilter] = useState('All Operators');
+  const [territoryFilter, setTerritoryFilter] = useState('All Territories');
   const [servicePartnerFilter, setServicePartnerFilter] = useState('all');
   const [adPartnerFilter, setAdPartnerFilter] = useState('All Partners');
+  const [sortConfig, setSortConfig] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
+      try {
         const result = await ApiRequest();
         console.log("All Data", result);
         const processedData = result.reduce((acc, item) => {
@@ -58,40 +61,36 @@ const DataList = () => {
           return acc;
         }, {});
         const currentHour = new Date().getHours();  
-       const hourData = Array.from({ length: currentHour + 1 }, (_, index) => (currentHour - index + 24) % 24);
-      
+        const hourData = Array.from({ length: currentHour + 1 }, (_, index) => (currentHour - index + 24) % 24);
         setData(processedData);
         setServiceIds(Object.keys(processedData));
         setHours(hourData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
+    };
     fetchData();
-  }, []); // Fetch data only once
+  }, []);
 
-  const filterServiceProviders = useCallback((serviceProviders, filter) => {
-    if (filter === 'all') return serviceProviders;
-    return serviceProviders.filter(serviceProvider => {
-      const partner = data[serviceProvider]?.info?.service_partner;
-      if (!partner) return false;
+  const dataArray = useMemo(() => Object.values(data), [data]);
 
-      if (filter === 'Globocom') return partner === 'globocom';
-      if (filter === 'Tiara') return partner === 'TIARA';
-      if (filter === 'Novustech') return partner === 'Novustech';
-      if (filter === 'Reseller') return !['globocom', 'TIARA', 'Novustech'].includes(partner);
-      return false;
+  const uniqueOptions = (field) => ['All', ...new Set(dataArray.map(item => item.info[field] || ''))];
+
+  const filteredData = useMemo(() => {
+    return dataArray.filter(item => {
+      const info = item.info || {};
+      return (
+        (adPartnerFilter === 'All Partners' || info.partner === adPartnerFilter) &&
+        (servicePartnerFilter === 'All Services' || info.service_partner === servicePartnerFilter) &&
+        (servicenameFilter === 'All Services' || info.servicename === servicenameFilter) &&
+        (billerFilter === 'All Billers' || info.billername === billerFilter) &&
+        (operatorFilter === 'All Operators' || info.operator === operatorFilter) &&
+        (territoryFilter === 'All Territories' || info.territory === territoryFilter)
+      );
     });
-  }, [data]);
+  }, [dataArray, adPartnerFilter, servicePartnerFilter, servicenameFilter, billerFilter, operatorFilter, territoryFilter]);
 
-  const adpartner = useCallback((partners, filter) => {
-    if (filter === 'All Partners') return partners;
-    return partners.filter(partner => {
-      const partnerInfo = data[partner]?.info?.partner;
-      if (!partnerInfo) return false;
-      if (filter === 'InHouseGoogle') return partnerInfo === 'InHouseGoogle';
-      if (filter === 'NewJGoogle') return partnerInfo === 'NewJGoogle' || partnerInfo === 'NewJGoogle-New';
-      return false;
-    });
-  }, [data]);
-
+ 
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
     if (ratio <= 0.25) return 'red';
@@ -138,10 +137,9 @@ const DataList = () => {
       return 0;
     });
   }, [serviceIds, sortConfig, calculateRatio]);
-
   const filteredServiceIds = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    const filteredByQuery = sortedServiceIds.filter(serviceId => {
+    return sortedServiceIds.filter(serviceId => {
       const { info } = data[serviceId] || {};
       return (
         serviceId.toLowerCase().includes(query) ||
@@ -149,41 +147,19 @@ const DataList = () => {
         (info?.servicename || '').toLowerCase().includes(query) ||
         (info?.operator || '').toLowerCase().includes(query) ||
         (info?.partner || '').toLowerCase().includes(query) ||
-        (info?.billername || '').toLowerCase().includes(query)||
+        (info?.billername || '').toLowerCase().includes(query) ||
         (info?.service_partner || '').toLowerCase().includes(query)
       );
     });
+  }, [sortedServiceIds, searchQuery, data]);
 
-    const filteredByServicePartner = filterServiceProviders(filteredByQuery, servicePartnerFilter);
-    return adpartner(filteredByServicePartner, adPartnerFilter);
-  }, [sortedServiceIds, searchQuery, servicePartnerFilter, adPartnerFilter, data, filterServiceProviders, adpartner]);
 
 
   return (
     <div className="custom-search-col">
     <div className="control">
     <div className="filter-controls">
-          <select
-            id="service-partner-filter"
-            value={servicePartnerFilter}
-            onChange={e => setServicePartnerFilter(e.target.value)}
-          >
-            <option value="all">All</option>
-            <option value="Globocom">Globocom</option>
-            <option value="Tiara">Tiara</option>
-            <option value="Novustech">Novustech</option>
-            <option value="Reseller">Reseller</option>
-          </select>
-          <select
-          id="ad-partner-filter"
-          value={adPartnerFilter}
-          onChange={e => setAdPartnerFilter(e.target.value)}
-          className="ad-partner-filter"
-        >
-          <option value="All Partners">All Partners</option>
-          <option value="InHouseGoogle">InHouseGoogle</option>
-          <option value="NewJGoogle">NewJGoogle</option>
-        </select>
+         
         </div>
         <input
           type="text"
@@ -198,13 +174,60 @@ const DataList = () => {
         <thead>
           <tr>
             {/* add button for graph */}
-            <th className="sticky_head-horizontal-1" rowSpan="2">Territory</th>
-            <th className="sticky_head" rowSpan="2">Operator</th>
+            <th className="sticky_head-horizontal-1" rowSpan="2">
+            <select value={territoryFilter} onChange={e => setTerritoryFilter(e.target.value)}>
+            {uniqueOptions('territory').map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+
+            </th>
+            <th className="sticky_head" rowSpan="2">
+            <select value={operatorFilter} onChange={e => setOperatorFilter(e.target.value)}>
+            {uniqueOptions('operator').map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+            </th>
             <th className="sticky_head-horizontal-2" rowSpan="2">App_serviceid</th>
-            <th className="sticky_head-horizontal-3" rowSpan="2">Biller</th>
-            <th className="sticky_head" rowSpan="2">Servicename</th>
-            <th className="sticky_head" rowSpan="2">Partner</th>
-            <th className="sticky_head" rowSpan="2">Service_partner</th>
+            <th className="sticky_head-horizontal-3" rowSpan="2">\
+            <select value={billerFilter} onChange={e => setBillerFilter(e.target.value)}>
+            {uniqueOptions('billername').map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+
+            </th>
+            <th className="sticky_head" rowSpan="2"> <select value={servicenameFilter} onChange={e => setServicenameFilter(e.target.value)}>
+            {uniqueOptions('servicename').map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+
+            </th>
+            <th className="sticky_head" rowSpan="2">  <select value={adPartnerFilter} onChange={e => setAdPartnerFilter(e.target.value)}>
+            {uniqueOptions('partner').map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+
+
+
+            </th>
+            <th className="sticky_head" rowSpan="2">
+            <select
+            id="service-partner-filter"
+            value={servicePartnerFilter}
+            onChange={e => setServicePartnerFilter(e.target.value)}
+          >
+           
+            <option value="all">Service_partner</option>
+            <option value="Globocom">Globocom</option>
+            <option value="Tiara">Tiara</option>
+            <option value="Novustech">Novustech</option>
+            <option value="Reseller">Reseller</option>
+          </select>
+            </th>
             {hours.map((hour, index) => (
               <th className="sticky_head" key={index} colSpan="2">
                 {hour >= 0 && hour < 12
