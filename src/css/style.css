@@ -550,26 +550,54 @@ td {
 
 .sticky-3 {
   position: sticky;
-  left: 167px;
+  left: 143px;
   background-color:#23272a;
   z-index: 10;
 }
+.sticky-4{
+  position: sticky;
+  left: 280px;
+  background-color:#23272a;
+  z-index: 10;
+}
+.sticky-5{
+  position: sticky;
+  left: 344px;
+  background-color:#23272a;
+  z-index: 10;
+}
+
+th.sticky_head-horizontal-4{
+  position: sticky;
+  left: 280px;
+  background-color:#23272a;
+  z-index: 10000 !important;}
+
+
+th.sticky_head-horizontal-5{
+  position: sticky;
+  left: 344px;
+  background-color:#23272a;
+  z-index: 10000 !important;
+
+}
+
 .service-id-cell{
   position: sticky;
-  left: 70px;
+  left: 46px;
   background-color: #23272a;
   z-index: 10;
 }
  th.sticky_head-horizontal-2{
   position: sticky;
-  left: 70px;
+  left: 46px;
   background-color:#23272a;
   z-index: 10000 !important;
 }
 
  th.sticky_head-horizontal-3{
   position: sticky;
-  left: 167px;
+  left: 143px;
   background-color:#23272a;
   z-index: 10000! important;
 }
@@ -643,4 +671,12 @@ td {
 
 .table th{
   padding:3px 0px 3px 0px !important;
+}
+
+
+.checkbox-list {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
 }

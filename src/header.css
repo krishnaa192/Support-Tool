@@ -7,6 +7,9 @@
     background-color: white;
     
 }
+#root{
+    overflow-x: hidden;
+}
 .row{
     background-color: #dad7cd !important;
 }
