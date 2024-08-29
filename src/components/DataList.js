@@ -3,9 +3,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/style.css';
-import { FixedSizeList as List } from 'react-window';
+import '../css/dropdown.css';
 
 import ApiRequest from '../APi';
+import MultiSelectDropdown from './MultiSelect';
 
 const DataList = () => {
   const [data, setData] = useState({});
@@ -22,6 +23,9 @@ const DataList = () => {
   const [serviceNameFilter, setserviceNameFilter] = useState('all')
   const [billerNameFilter, setBillerNameFilter] = useState('all');
 
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 30;
 
 
 
@@ -74,6 +78,10 @@ const DataList = () => {
     }
     fetchData();
   }, []); // Fetch data only once
+  
+
+
+
 
   const getPGPVCount = useCallback((id, hour, type) => {
     let pgCount = 0;
@@ -211,6 +219,20 @@ const DataList = () => {
     return partnerByFilter;
   }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter, data, filterData]);
 
+ 
+
+  // Step 3: Pagination Controls
+  const totalPages = Math.ceil(filteredServiceIds.length / itemsPerPage);
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  }
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredServiceIds.slice(indexOfFirstItem, indexOfLastItem);
+
   return (
     <div className="custom-search-col">
       <div className="control">
@@ -229,18 +251,14 @@ const DataList = () => {
           <thead>
             <tr>
               {/* add button for graph */}
-              <th className="sticky_head-horizontal-1" rowSpan="2">
-                <select
+              <th className="sticky_head" rowSpan="2">
+                <MultiSelectDropdown
                   id="territory-filter"
-                  value={territoryFilter}
-                  onChange={e => setTerritoryFilter(e.target.value)}
-                >
-                  {uniqueTerritory.map((territory, index) => (
-                    <option key={index} value={territory}>
-                      {territory}
-                    </option>
-                  ))}
-                </select>
+                  title="Territory"
+                  options={uniqueTerritory}
+                  selectedValue={territoryFilter}
+                  setSelectedValue={setTerritoryFilter}
+                />
               </th>
               <th className="sticky_head" rowSpan="2">
                 <select
@@ -401,6 +419,15 @@ const DataList = () => {
             )}
           </tbody>
         </table>
+        <div className='pagination-controls'>
+              <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                Previous
+              </button>
+              <span>Page {currentPage} of {totalPages}</span>
+              <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                Next
+              </button>
+            </div>
       </div>
     </div>
 

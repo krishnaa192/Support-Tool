@@ -680,3 +680,8 @@ th.sticky_head-horizontal-5{
 
   gap: 10px;
 }
+
+
+.table {
+  height: 85vh !important;
+}
