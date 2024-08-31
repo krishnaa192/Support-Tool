@@ -7,11 +7,22 @@ import { faTrashAlt, faCheckSquare, faChevronDown, faSquare } from '@fortawesome
 const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setSelectedValue }) => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [sortedOptions, setSortedOptions] = useState([]);
+  const [filteredOptions, setFilteredOptions] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     // Sort options in ascending order
     const sorted = [...options].sort();
     setSortedOptions(sorted);
+
+    // Filter options based on search query
+    const filtered = sorted.filter(option => {
+      if (typeof option === 'string') {
+        return option.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      return false;
+    });
+    setFilteredOptions(filtered);
 
     if (selectedValue === 'all') {
       setSelectedOptions(sorted);
@@ -22,7 +33,7 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
           : []
       );
     }
-  }, [selectedValue, options]);
+  }, [selectedValue, options, searchQuery]);
 
   const handleCheckboxChange = (value) => {
     if (value === 'all') {
@@ -49,6 +60,11 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
   const handleClear = () => {
     setSelectedOptions([]);
     setSelectedValue('');
+    setSearchQuery(''); // Clear the search query when clearing selections
+  };
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
   };
 
   const isSelected = (value) => selectedOptions.includes(value);
@@ -61,8 +77,15 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
         {title} <FontAwesomeIcon icon={faChevronDown} />
       </button>
       <div className="dropdown-menu">
+        <input
+          type="text"
+          className="search-filter"
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={handleSearch}
+        />
         <div className="checkbox-list">
-          {Array.isArray(sortedOptions) && sortedOptions.map((option, index) => (
+          {Array.isArray(filteredOptions) && filteredOptions.map((option, index) => (
             <div key={index} className="checkbox-item">
               <input
                 type="checkbox"
@@ -82,7 +105,7 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
             <FontAwesomeIcon icon={isAllSelected() ? faCheckSquare : faSquare} /> All
           </button>
           <button onClick={handleClear}>
-            <FontAwesomeIcon icon={faTrashAlt} />
+            <FontAwesomeIcon icon={faTrashAlt} /> Clear
           </button>
         </div>
       </div>

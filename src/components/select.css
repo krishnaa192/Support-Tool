@@ -64,4 +64,8 @@
   svg{
     background-color: white !important;
   }
+  .search-filter{
+    margin-top: 20px;
+    width: 70%;
+  }
   
