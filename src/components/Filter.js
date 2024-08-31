@@ -1,171 +1,68 @@
 import React, { useState } from 'react';
-import './FIlter.css';
+import MultiSelectDropdown from './MultiSelectDropdown'; // Make sure to adjust the import path accordingly
 
-const MultiFilter = () => {
-  const [selectedOptions, setSelectedOptions] = useState({});
-
-  const DemoData = [
-    { id: 1, name: 'John Doe', age: 32 },
-    { id: 2, name: 'Jane Doe', age: 25 },
-    { id: 3, name: 'James Smith', age: 45 },
-    { id: 4, name: 'Jill Smith', age: 35 },
-    { id: 5, name: 'John Doe', age: 32 },
-    { id: 6, name: 'Jane Doe', age: 25 },
-    { id: 7, name: 'James Smith', age: 45 },
-
-  ];
-
-  const handleCheckboxChange = (id) => {
-    setSelectedOptions((prevState) => ({
-      ...prevState,
-      [id]: !prevState[id]
-    }));
-  };
+const FilterButton = ({ uniqueTerritory, territoryFilter, setTerritoryFilter, 
+                        uniqueOperator, operatorFilter, setOperatorFilter,
+                        uniqueBillerName, billerNameFilter, setBillerNameFilter,
+                        uniqueServiceName, serviceNameFilter, setServiceNameFilter,
+                        uniqueAdPartners, adPartnerFilter, setAdPartnerFilter,
+                        uniqueServicePartner, servicePartnerFilter, setServicePartnerFilter
+                      }) => {
+  const [showFilters, setShowFilters] = useState(false);
 
   return (
-    <div className='filter-main'>
-      <div className='filter-container'>
-        <div className='filter'>
-          <label htmlFor='dropdown'>Filter by 1: Territory</label>
-          <div className='dropdown'>
-            <input type='text' id='search' placeholder='Search...' />
-            <br />
-            <input type='checkbox' id='checkbox-1' />
-            <label htmlFor='checkbox' >All</label>
-            {DemoData.map((data) => (
-              <div key={data.id} className='dropdown-option'>
-                <input
-                  type='checkbox'
-                  id={`checkbox-${data.id}`}
-                  checked={selectedOptions[data.id] || false}
-                  onChange={() => handleCheckboxChange(data.id)}
-                />
-                <label htmlFor={`checkbox-${data.id}`}>{data.name}</label>
-              </div>
-            ))}
-          </div>
+    <>
+      <button className="filter-button" onClick={() => setShowFilters(!showFilters)}>
+        Filter
+      </button>
+      {showFilters && (
+        <div className="filter-dropdown">
+          <MultiSelectDropdown
+            id="territory-filter"
+            title="Territory"
+            options={uniqueTerritory}
+            selectedValue={territoryFilter}
+            setSelectedValue={setTerritoryFilter}
+          />
+          <MultiSelectDropdown
+            id="operator-filter"
+            title="Operator"
+            options={uniqueOperator}
+            selectedValue={operatorFilter}
+            setSelectedValue={setOperatorFilter}
+          />
+          <MultiSelectDropdown
+            id="biller-name-filter"
+            title="Biller Name"
+            options={uniqueBillerName}
+            selectedValue={billerNameFilter}
+            setSelectedValue={setBillerNameFilter}
+          />
+          <MultiSelectDropdown
+            id="service-name-filter"
+            title="Service Name"
+            options={uniqueServiceName}
+            selectedValue={serviceNameFilter}
+            setSelectedValue={setServiceNameFilter}
+          />
+          <MultiSelectDropdown
+            id="ad-partner-filter"
+            title="Ad Partner"
+            options={uniqueAdPartners}
+            selectedValue={adPartnerFilter}
+            setSelectedValue={setAdPartnerFilter}
+          />
+          <MultiSelectDropdown
+            id="service-partner-filter"
+            title="Service Partner"
+            options={uniqueServicePartner}
+            selectedValue={servicePartnerFilter}
+            setSelectedValue={setServicePartnerFilter}
+          />
         </div>
-        <div className='filter'>
-          <label htmlFor='dropdown'>Filter by 2: operator</label>
-          <div className='dropdown'>
-            <input type='text' id='search' placeholder='Search...' />
-            <br />
-            <input type='checkbox' id='checkbox-1' />
-
-            <label htmlFor='checkbox-1' >All</label>
-            {DemoData.map((data) => (
-              <div key={data.id} className='dropdown-option'>
-                <input
-                  type='checkbox'
-                  id={`checkbox-${data.id}`}
-                  checked={selectedOptions[data.id] || false}
-                  onChange={() => handleCheckboxChange(data.id)}
-                />
-                <label htmlFor={`checkbox-${data.id}`}>{data.name}</label>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='filter'>
-          <label htmlFor='dropdown'>Filter by :Biller
-          </label>
-          <div className='dropdown'>
-
-            <input type='text' id='search' placeholder='Search...' />
-            <br />
-            <input type='checkbox' id='checkbox-1' />
-
-            <label htmlFor='checkbox-1' >All</label>
-            {DemoData.map((data) => (
-              <div key={data.id} className='dropdown-option'>
-                <input
-                  type='checkbox'
-                  id={`checkbox-${data.id}`}
-                  checked={selectedOptions[data.id] || false}
-                  onChange={() => handleCheckboxChange(data.id)}
-                />
-                <label htmlFor={`checkbox-${data.id}`}>{data.name}</label>
-
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='filter'>
-          <label htmlFor='dropdown'>Filter by :Service Name</label>
-          <div className='dropdown'>
-            <input type='text' id='search' placeholder='Search...' />
-            <br />
-            <input type='checkbox' id='checkbox-1' />
-
-            <label htmlFor='checkbox-1' >All</label>
-            {DemoData.map((data) => (
-              <div key={data.id} className='dropdown-option'>
-                <input
-                  type='checkbox'
-                  id={`checkbox-${data.id}`}
-                  checked={selectedOptions[data.id] || false}
-                  onChange={() => handleCheckboxChange(data.id)}
-                />
-                <label htmlFor={`checkbox-${data.id}`}>{data.name}</label>
-
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='filter'>
-          <label htmlFor='dropdown'>Filter by:Partner</label>
-          <div className='dropdown'>
-            <input type='text' id='search' placeholder='Search...' />
-            <br />
-            <input type='checkbox' id='checkbox-1' />
-
-            <label htmlFor='checkbox-1' >All</label>
-            {DemoData.map((data) => (
-              <div key={data.id} className='dropdown-option'>
-                <input
-                  type='checkbox'
-                  id={`checkbox-${data.id}`}
-                  checked={selectedOptions[data.id] || false}
-                  onChange={() => handleCheckboxChange(data.id)}
-                />
-                <label htmlFor={`checkbox-${data.id}`}>{data.name}</label>
-
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='filter'>
-          <label htmlFor='dropdown'>Filter by:Service Partner</label>
-          <div className='dropdown'>
-            <input type='text' id='search' placeholder='Search...' />
-            <br />
-            <input type='checkbox' id='checkbox-1' />
-
-            <label htmlFor='checkbox-1' >All</label>
-            {DemoData.map((data) => (
-              <div key={data.id} className='dropdown-option'>
-                <input
-                  type='checkbox'
-                  id={`checkbox-${data.id}`}
-                  checked={selectedOptions[data.id] || false}
-                  onChange={() => handleCheckboxChange(data.id)}
-                />
-                <label htmlFor={`checkbox-${data.id}`}>{data.name}</label>
-
-              </div>
-            ))}
-
-          </div>
-        </div>
-      </div>
-      <div className='button-filter'>
-     
-        <button>Reset All Selection </button>
-        <button>Apply</button>
-      </div>
-
-    </div>
+      )}
+    </>
   );
 };
 
-export default MultiFilter;
+export default FilterButton;

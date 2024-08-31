@@ -1,24 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import './select.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrashAlt, faCheckSquare, faChevronDown, faSquare } from '@fortawesome/free-solid-svg-icons';
 
-const MultiSelectDropdown = ({ id, title, options, selectedValue, setSelectedValue }) => {
+const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setSelectedValue }) => {
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [sortedOptions, setSortedOptions] = useState([]);
 
-  // Effect to update selectedOptions when selectedValue changes
   useEffect(() => {
+    // Sort options in ascending order
+    const sorted = [...options].sort();
+    setSortedOptions(sorted);
+
     if (selectedValue === 'all') {
-      setSelectedOptions(options);
+      setSelectedOptions(sorted);
     } else {
-      setSelectedOptions(selectedValue.split(','));
+      setSelectedOptions(
+        typeof selectedValue === 'string' 
+          ? selectedValue.split(',').filter(Boolean) 
+          : []
+      );
     }
   }, [selectedValue, options]);
 
   const handleCheckboxChange = (value) => {
     if (value === 'all') {
-      if (selectedOptions.length === options.length) {
+      if (isAllSelected()) {
         setSelectedOptions([]);
         setSelectedValue('');
       } else {
-        setSelectedOptions(options);
+        setSelectedOptions(sortedOptions);
         setSelectedValue('all');
       }
     } else {
@@ -26,11 +38,9 @@ const MultiSelectDropdown = ({ id, title, options, selectedValue, setSelectedVal
         const newSelection = prevSelected.includes(value)
           ? prevSelected.filter(item => item !== value)
           : [...prevSelected, value];
-        if (newSelection.length === options.length) {
-          setSelectedValue('all');
-        } else {
-          setSelectedValue(newSelection.join(','));
-        }
+        
+        const allSelected = newSelection.length === sortedOptions.length;
+        setSelectedValue(allSelected ? 'all' : newSelection.join(','));
         return newSelection;
       });
     }
@@ -41,36 +51,18 @@ const MultiSelectDropdown = ({ id, title, options, selectedValue, setSelectedVal
     setSelectedValue('');
   };
 
-  const handleSort = () => {
-    const sorted = [...selectedOptions].sort();
-    setSelectedOptions(sorted);
-    setSelectedValue(sorted.join(','));
-  };
-
-  const handleApply = () => {
-    setSelectedValue(selectedOptions.length === options.length ? 'all' : selectedOptions.join(','));
-  };
-
   const isSelected = (value) => selectedOptions.includes(value);
+
+  const isAllSelected = () => selectedOptions.length === sortedOptions.length && sortedOptions.length > 0;
 
   return (
     <div className="multi-select-dropdown">
       <button className="dropdown-toggle" type="button">
-        {title}
+        {title} <FontAwesomeIcon icon={faChevronDown} />
       </button>
       <div className="dropdown-menu">
         <div className="checkbox-list">
-          <div className="checkbox-item">
-            <input
-              type="checkbox"
-              id={`${id}-checkbox-all`}
-              value="all"
-              checked={selectedOptions.length === options.length}
-              onChange={() => handleCheckboxChange('all')}
-            />
-            <label htmlFor={`${id}-checkbox-all`}>All</label>
-          </div>
-          {options.map((option, index) => (
+          {Array.isArray(sortedOptions) && sortedOptions.map((option, index) => (
             <div key={index} className="checkbox-item">
               <input
                 type="checkbox"
@@ -86,13 +78,24 @@ const MultiSelectDropdown = ({ id, title, options, selectedValue, setSelectedVal
           ))}
         </div>
         <div className="dropdown-buttons">
-          <button onClick={handleSort}>Sort</button>
-          <button onClick={handleClear}>Clear</button>
-          <button onClick={handleApply}>OK</button>
+          <button onClick={() => handleCheckboxChange('all')}>
+            <FontAwesomeIcon icon={isAllSelected() ? faCheckSquare : faSquare} /> All
+          </button>
+          <button onClick={handleClear}>
+            <FontAwesomeIcon icon={faTrashAlt} />
+          </button>
         </div>
       </div>
     </div>
   );
+};
+
+MultiSelectDropdown.propTypes = {
+  id: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  options: PropTypes.array.isRequired,
+  selectedValue: PropTypes.string,
+  setSelectedValue: PropTypes.func.isRequired,
 };
 
 export default MultiSelectDropdown;

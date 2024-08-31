@@ -674,28 +674,11 @@ th.sticky_head-horizontal-5{
 }
 
 
-.checkbox-list {
-  display: flex;
-  flex-wrap: wrap;
 
-  gap: 10px;
-}
 
 
 .table {
   height: 85vh !important;
 }
 
-.filter-button button{
-  width: 80px;
-  background-color: #f8f9fa;
-  color: black;
-  border: none;
- padding: 10px;
- display: flex;
-  cursor: pointer;
-  border-radius: 4px;
-}
-.filter-button button svg{
-  background-color: #f8f9fa;
-}
+

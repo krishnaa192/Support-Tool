@@ -13,6 +13,7 @@ const DataList = () => {
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
 
+  const [showPopup, setShowPopup] = useState(false); // State for popup visibility
 
   const [sortConfig, setSortConfig] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +23,7 @@ const DataList = () => {
   const [operatorFilter, setOperatorFilter] = useState('all');
   const [serviceNameFilter, setserviceNameFilter] = useState('all')
   const [billerNameFilter, setBillerNameFilter] = useState('all');
+
 
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -109,42 +111,56 @@ const DataList = () => {
   const getCutrrentHour = new Date().getHours();
 
   const uniqueAdPartners = useMemo(() => {
-    const partners = Object.values(data).map(item => item.info.partner);
-    return ['all', ...new Set(partners)];
+    const partners = new Set(Object.values(data).map(item => item.info.partner));
+    partners.add('all');
+    return Array.from(partners);
   }, [data]);
 
   const uniqueBillerName = useMemo(() => {
-    const billerName = Object.values(data).map(item => item.info.billername);
-    return ['all', ...new Set(billerName)];
+    const billerName = new Set(Object.values(data).map(item => item.info.billername));
+    billerName.add('all');
+    return Array.from(billerName);
   }, [data]);
 
   const uniqueServicePartner = useMemo(() => {
-    const servicePartner = Object.values(data).map(item => item.info.service_partner);
-    return ['all', ...new Set(servicePartner)];
+    const servicePartner =new Set(Object.values(data).map(item => item.info.service_partner));
+    servicePartner.add('all');
+    return Array.from(servicePartner);
   }, [data]);
 
   const uniqueTerritory = useMemo(() => {
-    const territory = Object.values(data).map(item => item.info.territory);
-    return ['all', ...new Set(territory)];
+    const territorySet = new Set(Object.values(data).map(item => item.info.territory));
+    territorySet.add('all'); // Add 'all' to the set
+    return Array.from(territorySet); // Convert the set to an array
   }, [data]);
+  
 
   const uniqueOperator = useMemo(() => {
-    const operator = Object.values(data).map(item => item.info.operator);
-    return ['all', ...new Set(operator)];
+    const operatorSet = new Set(Object.values(data).map(item => item.info.operator));
+operatorSet.add('all');
+return Array.from(operatorSet);
   }, [data]);
 
   const uniqueServiceName = useMemo(() => {
-    const serviceName = Object.values(data).map(item => item.info.servicename);
-    return ['all', ...new Set(serviceName)];
+    const serviceName = new Set(Object.values(data).map(item => item.info.servicename));
+    serviceName.add('all');
+    return Array.from(serviceName);
+
   }, [data]);
 
-  const filterData = useCallback((items, filter, field) => {
-    if (filter === 'all') return items;
-    return items.filter(item => {
-      const fieldValue = data[item]?.info?.[field];
-      return fieldValue && fieldValue === filter;
-    });
-  }, [data]);
+const filterData = useCallback((items, filter, field) => {
+  if (filter === 'all') return items; // No filtering if 'all' is selected
+
+  const filters = filter.split(',').filter(Boolean); // Split into array and remove empty strings
+
+  return items.filter(item => {
+    const fieldValue = data[item]?.info?.[field];
+    console.log("fieldValue", fieldValue);
+    return fieldValue && filters.includes(fieldValue);
+  });
+}, [data]);
+;
+  
 
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
@@ -219,7 +235,33 @@ const DataList = () => {
     return partnerByFilter;
   }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter, data, filterData]);
 
- 
+  const handleCheckboxChange = (field, value) => {
+    switch (field) {
+      case 'servicePartner':
+        setServicePartnerFilter(value);
+        break;
+      case 'adPartner':
+        setAdPartnerFilter(value);
+        break;
+      case 'territory':
+        setTerritoryFilter(value);
+        break;
+      case 'operator':
+        setOperatorFilter(value);
+        break;
+      case 'serviceName':
+        setserviceNameFilter(value);
+        break;
+      case 'billerName':
+        setBillerNameFilter(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Toggle popup visibility
+  const handlePopupToggle = () => setShowPopup(prev => !prev);
 
   // Step 3: Pagination Controls
   const totalPages = Math.ceil(filteredServiceIds.length / itemsPerPage);
@@ -245,6 +287,37 @@ const DataList = () => {
           onChange={e => setSearchQuery(e.target.value)}
           className="search-input"
         />
+        <div className="filter-controls">
+        <button onClick={handlePopupToggle}>Filters</button>
+      {/* Popup for MultiSelectDropdown */}
+      {showPopup && (
+        <div className="popup">
+          <MultiSelectDropdown
+            options={{
+              adPartners: uniqueAdPartners,
+              billerName: uniqueBillerName,
+              servicePartner: uniqueServicePartner,
+              territory: uniqueTerritory,
+              operator: uniqueOperator,
+              serviceName: uniqueServiceName
+            }}
+            selectedFilters={{
+              adPartnerFilter,
+              billerNameFilter,
+              servicePartnerFilter,
+              territoryFilter,
+              operatorFilter,
+              serviceNameFilter
+            }}
+            onCheckboxChange={handleCheckboxChange}
+          />
+          <button onClick={handlePopupToggle}>Close</button>
+        </div>
+      )}
+
+
+
+          </div>
       </div>
       <div className="table-container">
         <table className="table table-bordered">
@@ -261,66 +334,57 @@ const DataList = () => {
                 />
               </th>
               <th className="sticky_head" rowSpan="2">
-                <select
+                <MultiSelectDropdown
                   id="operator-filter"
-                  value={operatorFilter}
-                  onChange={e => setOperatorFilter(e.target.value)}>
-                  {uniqueOperator.map((operator, index) => (
-                    <option key={index} value={operator}>
-                      {operator}
-                    </option>
-                  ))}
-                </select>
+                  title="Operator"
+                  options={uniqueOperator}
+                  selectedValue={operatorFilter}
+                  setSelectedValue={setOperatorFilter}
+                />
               </th>
               <th className="sticky_head-horizontal-2" rowSpan="2">App_serviceid</th>
               <th className="sticky_head-horizontal-3" rowSpan="2">
-                <select
-                  id="biller-name-filter"
-                  value={billerNameFilter}
-                  onChange={e => setBillerNameFilter(e.target.value)}>
-                  {uniqueBillerName.map((billerName, index) => (
-                    <option key={index} value={billerName}>
-                      {billerName}
-                    </option>
-                  ))}
-                </select>
-              </th>
-              <th className="sticky_head" rowSpan="2">
-                <select
-                  id="service-name-filter"
-                  value={serviceNameFilter}
-                  onChange={e => setserviceNameFilter(e.target.value)}>
-                  {uniqueServiceName.map((serviceName, index) => (
-                    <option key={index} value={serviceName}>
-                      {serviceName}
-                    </option>
-                  ))}
-                </select>
-              </th>
-              <th className="sticky_head" rowSpan="2">
-                <select
-                  id="ad-partner-filter"
-                  value={adPartnerFilter}
-                  onChange={e => setAdPartnerFilter(e.target.value)}
-                  className="ad-partner-filter">
-                  {uniqueAdPartners.map((partner, index) => (
-                    <option key={index} value={partner}>
-                      {partner}
-                    </option>
-                  ))}
-                </select>
-              </th>
-              <th className="sticky_head" rowSpan="2">    <select
-                id="service-partner-filter"
-                value={servicePartnerFilter}
-                onChange={e => setServicePartnerFilter(e.target.value)}>
-                {uniqueServicePartner.map((partner, index) => (
-                  <option key={index} value={partner}>
-                    {partner}
-                  </option>
-                ))}
+                <MultiSelectDropdown
 
-              </select></th>
+                  id="biller-name-filter"
+                  title="Biller Name"
+                  options={uniqueBillerName}
+                  selectedValue={billerNameFilter}
+                  setSelectedValue={setBillerNameFilter}
+                />
+
+              </th>
+              <th className="sticky_head" rowSpan="2">
+                <MultiSelectDropdown
+                  id="service-name-filter"
+                  title="Service Name"
+                  options={uniqueServiceName}
+                  selectedValue={serviceNameFilter}
+                  setSelectedValue={setserviceNameFilter}
+                />
+              </th>
+              <th className="sticky_head" rowSpan="2">
+                <MultiSelectDropdown
+                  id="ad-partner-filter"
+                  title="Ad Partner"
+                  options={uniqueAdPartners}
+                  selectedValue={adPartnerFilter}
+                  setSelectedValue={setAdPartnerFilter}
+                />
+              </th>
+              <th className="sticky_head" rowSpan="2">    
+
+                <MultiSelectDropdown
+
+                  id="service-partner-filter"
+                  title="Service Partner"
+                  options={uniqueServicePartner}
+                  selectedValue={servicePartnerFilter}
+                  setSelectedValue={setServicePartnerFilter}
+                />
+
+
+              </th>
               <th className="sticky_head-horizontal-4" rowSpan="2">
 
                 Pg Count

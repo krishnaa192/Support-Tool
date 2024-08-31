@@ -5,7 +5,7 @@
   
   .dropdown-toggle {
     background-color: #f8f9fa !important;
-    border: 1px solid #ced4da;
+    border: none;
     padding: 5px;
     cursor: pointer;
   }
@@ -27,7 +27,7 @@
   }
   
   .checkbox-list {
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
     background-color: #ffffff;
   }
