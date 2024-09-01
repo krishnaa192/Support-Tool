@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import DataList from '../components/DataList';
 import InactiveData from '../components/InactiveData';
-import { fetchDataAndCount, processDataByServiceId } from '../utils';
 import '../css/style.css';
 import '../header.css';
+import { fetchDataAndCount, processDataByServiceId } from '../utils';
 
 const Header = () => {
   const [tab, setTab] = useState('all');
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(() => {
+    const savedNotifications = localStorage.getItem('notifications');
+    return savedNotifications ? JSON.parse(savedNotifications) : [];
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -26,13 +29,12 @@ const Header = () => {
 
     const processData = processDataByServiceId(data);
 
-    const checkAlerts = async () => {
+    const checkAlerts = () => {
       const currentTime = new Date().getTime();
       const lastCheckTime = localStorage.getItem('lastCheckTime');
-      const interval = 45 * 60 * 1000; // 45 minutes in milliseconds
+      const interval = 45 * 60 * 1000;
 
       if (lastCheckTime && currentTime - lastCheckTime < interval) {
-        // Skip checking if it hasn't been 45 minutes since the last check
         return;
       }
 
@@ -41,8 +43,8 @@ const Header = () => {
 
       Object.keys(processData).forEach(serviceId => {
         const serviceHours = processData[serviceId]?.hours || [];
-
         let hasRecentData = false;
+
         for (let i = 0; i < 2; i++) {
           const hourIndex = (currentHour - i + 24) % 24;
           const hourData = serviceHours[hourIndex] || {};
@@ -55,25 +57,52 @@ const Header = () => {
         }
 
         if (!hasRecentData) {
-          // Add to notifications for no data in last 2 hours
-          newNotifications.push(`Service ID ${serviceId} has no data for the last 2 hours.`);
+          newNotifications.push({
+            id: new Date().getTime(),
+            message: `Service ID ${serviceId} has no traffic in the last 2 hours.`,
+            timestamp: new Date().toLocaleString()
+          });
         }
       });
 
-      // Update notifications state for the 'notification' tab
-      setNotifications(newNotifications);
+      // Add dummy notification for testing
+      newNotifications.push({
+        id: new Date().getTime(),
+        message: 'Service ID 1234 has no traffic in the last 2 hours.',
+        timestamp: new Date().toLocaleString()
+      });
 
-      // Update last check time in localStorage
+      if (newNotifications.length > 0) {
+        const updatedNotifications = [...notifications, ...newNotifications];
+        setNotifications(updatedNotifications);
+        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+      }
+
       localStorage.setItem('lastCheckTime', currentTime.toString());
     };
 
-    // Run checkAlerts immediately and set an interval for it
     checkAlerts();
-    const intervalId = setInterval(checkAlerts, 45 * 60 * 1000); // Check every 45 minutes
+    const intervalId = setInterval(checkAlerts, 45 * 60 * 1000);
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    return () => clearInterval(intervalId);
+  }, [loading, data, notifications]);
 
-  }, [loading, data]);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const currentTime = new Date().getTime();
+      const updatedNotifications = notifications.filter(notification => {
+        const notificationTime = new Date(notification.id).getTime();
+        return currentTime - notificationTime < 6 * 60 * 60 * 1000; // 6 hours
+      });
+
+      if (updatedNotifications.length !== notifications.length) {
+        setNotifications(updatedNotifications);
+        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+      }
+    }, 60 * 1000); // Check every minute
+
+    return () => clearInterval(timer);
+  }, [notifications]);
 
   return (
     <>
@@ -94,9 +123,6 @@ const Header = () => {
                   </button>
                 </div>
                 <h3 className="head_black">Globocom Support Monitoring</h3>
-                <div className='stats-container'>
-                  {/* Add any other stats you need here */}
-                </div>
               </div>
             </div>
           </div>
@@ -107,17 +133,28 @@ const Header = () => {
       {tab === 'inactive' && <InactiveData data={data} />}
       {tab === 'notification' && (
         <div className="notifications-container">
+          
           {notifications.length === 0 ? (
-            <p>No notifications at the moment.</p>
+            <p className="no-notifications">No notifications at the moment.</p>
           ) : (
             notifications.map((notification, index) => (
               <div key={index} className="notification-item">
-                {notification}
+                <div className="notification-message">{notification.message}</div>
+                <div className="notification-timestamp">{notification.timestamp}</div>
               </div>
             ))
           )}
         </div>
-      )}
+
+      )}  
+<div className="notifications-container">
+    <div  className="notification-item">
+      <div className="notification-message"> ID  1234 is not active from 2 hours    </div>
+      <div className="notification-timestamp">  12 AUgust 12 Am     </div>
+    </div>
+ 
+</div>
+   
     </>
   );
 };

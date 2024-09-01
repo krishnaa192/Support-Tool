@@ -40,7 +40,8 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
       if (isAllSelected()) {
         setSelectedOptions([]);
         setSelectedValue('');
-      } else {
+      }
+       else {
         setSelectedOptions(sortedOptions);
         setSelectedValue('all');
       }

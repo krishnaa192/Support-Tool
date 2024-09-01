@@ -5,6 +5,7 @@ body {
   margin: 0;
   padding: 0;
   font-size: 12px;
+  max-width: 3000vw !important;
 }
 
 /* Breadcrumb container */
@@ -44,7 +45,7 @@ body {
 
     padding-top: 2px !important;
     display: flex;
-    justify-content: space-between;
+   
 }
 #service-partner-filter{
  padding: 10px;
@@ -142,7 +143,7 @@ body {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 10px;
+  right: -10px;
 }
 
 th:hover .sort-buttons {
@@ -564,6 +565,7 @@ th.sticky_head-horizontal-4{
   z-index: 10000 !important;}
 
 
+
 th.sticky_head-horizontal-5{
   position: sticky;
   left: 294px;
@@ -669,7 +671,12 @@ th.sticky_head-horizontal-5{
 
 .table {
   height: 85vh !important;
+ /* max-width: 240vw !important; */
+ table-layout: auto !important;
+  width: 100% !important;
+  flex: 1;
 }
+
 
 
 .pagination-controls {
@@ -752,4 +759,246 @@ th:hover .sort-buttons {
 /* Ensure icons inside buttons have no margin */
 .sort-button i {
   margin: 0; /* Remove any margin on icons */
+}
+.stats-data{
+  display: flex;
+  margin-left: 600px;
+  flex-direction: row;
+}
+.sort-buttons {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px; /* Space between buttons */
+}
+
+.sort-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px; /* Adjust font size if necessary */
+  transition: color 0.3s, transform 0.3s;
+}
+
+.sort-button:hover {
+  color: #007bff; /* Change to your desired hover color */
+  transform: scale(1.1); /* Slightly enlarge the button on hover */
+}
+
+.sort-button.active {
+  color: #007bff; /* Active button color */
+}
+/* Adjust column width */
+th, td {
+  padding: 10px; /* Adjust padding for better spacing */
+  text-align: center; /* Center-align text if desired */
+}
+
+/* Increase width for specific columns if needed */
+th.pg-col, td.pg-col {
+  width: 150px; /* Adjust width as needed */
+}
+
+th.pv-col, td.pv-col {
+  width: 150px; /* Adjust width as needed */
+}
+
+/* Style for button container */
+.sort-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px !important; /* Space between buttons */
+}
+
+/* Button styles */
+.sort-button {
+  background: transparent;
+  
+  border-radius: 4px; /* Rounded corners */
+  padding: 5px 3px; /* Padding for button */
+  cursor: pointer;
+  font-size: 16px; /* Adjust font size if necessary */
+  transition: color 0.3s, transform 0.3s, background 0.3s;
+}
+
+.sort-button:hover {
+  color: #007bff; /* Change to your desired hover color */
+  transform: scale(1.0); /* Slightly enlarge the button on hover */
+  background: #f8f9fa; /* Light background on hover */
+}
+
+.sort-button.active {
+  color: #007bff; /* Active button color */
+  background: #e9ecef; /* Active background color */
+}
+
+/* Optional: Adjust button container width if necessary */
+th.pg-col .sort-buttons,
+th.pv-col .sort-buttons {
+  width: 100%; /* Ensure the container takes full width of the column */
+}
+/* Style for buttons with smaller icons */
+.sort-button i {
+  font-size: 10px; /* Adjust font size to make icons smaller */
+}
+/* General table styles */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #2c2f33;
+  color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  table-layout: auto; /* Allow table to adjust based on content */
+}
+
+/* Ensure columns have flexible width but prevent them from squeezing too much */
+th, td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ddd;
+  min-width: 100px; /* Minimum width to prevent squeezing */
+  white-space: nowrap; /* Prevent text from wrapping */
+}
+
+/* Specific column widths if necessary */
+th.pg-col, td.pg-col {
+  width: 150px; /* Adjust width as needed */
+}
+
+th.pv-col, td.pv-col {
+  width: 150px; /* Adjust width as needed */
+}
+
+/* Table container to handle overflow */
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Sticky columns adjustment */
+.sticky-col {
+  position: sticky;
+  left: 0;
+  background-color: #23272a;
+  z-index: 10;
+  /* Adjust z-index based on table header's z-index */
+}
+
+/* Sticky header styles */
+.table th {
+  background-color: #7289da;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Styling for sort buttons */
+.sort-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px; /* Space between buttons */
+}
+
+.sort-button {
+  background: transparent;
+  border-radius: 4px;
+  padding: 0px 1px;
+
+  cursor: pointer;
+  font-size: 16px;
+  transition: color 0.3s, transform 0.3s, background 0.3s;
+}
+.sort-buttons{
+  display: none;
+  margin-left: 80px;
+  margin-top: -10px;
+}
+
+.sort-button:hover {
+  color: #007bff;
+  transform: scale(1.0);
+  background: #f8f9fa;
+}
+
+.sort-button.active {
+  color: #007bff;
+  background: #e9ecef;
+}
+
+/* Ensure dropdown menu is above other elements */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 10000;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  padding: 0;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #333;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f1f1f1;
+}
+
+.service-id-cell:hover .dropdown-menu {
+  display: block;
+}
+
+/* Pagination controls styling */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.pagination-controls button {
+  border: none;
+  background: none;
+  padding: 5px 10px;
+  margin: 0 5px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #007bff;
+}
+
+.pagination-controls button:disabled {
+  cursor: not-allowed;
+  color: #ccc;
+}
+
+.pagination-controls .page-numbers {
+  display: flex;
+  align-items: center;
+}
+
+.pagination-controls .page-numbers button {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background-color: #fff;
+  color: #333;
+}
+
+.pagination-controls .page-numbers button.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.pagination-controls .page-numbers span {
+  margin: 0 2px;
 }
