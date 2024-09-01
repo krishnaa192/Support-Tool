@@ -105,7 +105,7 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
             <FontAwesomeIcon icon={isAllSelected() ? faCheckSquare : faSquare} /> All
           </button>
           <button onClick={handleClear}>
-            <FontAwesomeIcon icon={faTrashAlt} /> Clear
+            <FontAwesomeIcon icon={faTrashAlt} />
           </button>
         </div>
       </div>
