@@ -7,15 +7,16 @@ import '../css/dropdown.css';
 import Modal from './Model';
 import ApiRequest from '../APi';
 import MultiSelectDropdown from './MultiSelect';
+import GraphData from '../Page/GraphData';
 
 const DataList = () => {
   const [data, setData] = useState({});
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
-const [sortType, setSortType] = useState('');
+  const [sortType, setSortType] = useState('');
   const [sortBy, setSortBy] = useState('')
- 
+
   const [sortConfig, setSortConfig] = useState({});
   const [numSort, setNumSort] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,14 +28,14 @@ const [sortType, setSortType] = useState('');
   const [billerNameFilter, setBillerNameFilter] = useState('all');
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30;
+  const itemsPerPage = 55;
 
 
 
 
   useEffect(() => {
     const fetchData = async () => {
-    
+
       const result = await ApiRequest();
       if (!result) return "There is problem in fetching data";
 
@@ -84,11 +85,6 @@ const [sortType, setSortType] = useState('');
     fetchData();
   }, []); // Fetch data only once
 
-
-  //sortpgpvcount in ascending and descending order
-
-
-
   const getPGPVCount = useCallback((id, hour, type) => {
     let pgCount = 0;
     let pvCount = 0;
@@ -110,56 +106,47 @@ const [sortType, setSortType] = useState('');
       return pvCount;
     }
 
-    return 0; // Default case if type doesn't match
+    return 0;
   }, [data]);
   const getCutrrentHour = new Date().getHours();
 
   const uniqueAdPartners = useMemo(() => {
     const partners = new Set(Object.values(data).map(item => item.info.partner));
-    partners.add('all');
     return Array.from(partners);
   }, [data]);
 
   const uniqueBillerName = useMemo(() => {
     const billerName = new Set(Object.values(data).map(item => item.info.billername));
-    billerName.add('all');
     return Array.from(billerName);
   }, [data]);
 
   const uniqueServicePartner = useMemo(() => {
     const servicePartner = new Set(Object.values(data).map(item => item.info.service_partner));
-    servicePartner.add('all');
     return Array.from(servicePartner);
   }, [data]);
 
   const uniqueTerritory = useMemo(() => {
     const territorySet = new Set(Object.values(data).map(item => item.info.territory));
-    territorySet.add('all'); // Add 'all' to the set
     return Array.from(territorySet); // Convert the set to an array
   }, [data]);
 
 
   const uniqueOperator = useMemo(() => {
     const operatorSet = new Set(Object.values(data).map(item => item.info.operator));
-    operatorSet.add('all');
     return Array.from(operatorSet);
   }, [data]);
 
   const uniqueServiceName = useMemo(() => {
     const serviceName = new Set(Object.values(data).map(item => item.info.servicename));
-    serviceName.add('all');
     return Array.from(serviceName);
 
   }, [data]);
 
   const filterData = useCallback((items, filter, field) => {
     if (filter === 'all') return items; // No filtering if 'all' is selected
-
     const filters = filter.split(',').filter(Boolean); // Split into array and remove empty strings
-
     return items.filter(item => {
       const fieldValue = data[item]?.info?.[field];
-    
       return fieldValue && filters.includes(fieldValue);
     });
   }, [data]);
@@ -188,53 +175,26 @@ const [sortType, setSortType] = useState('');
     return 0;
   }, [data]);
 
-  const sortnumber = () => {
-    const sortedData = [...data].sort((a, b) =>
-      sortBy === 'asc'
-        ? a.age - b.age
-        : b.age - a.age
-    );
-    setData(sortedData);
-    setSortBy(sortBy === 'asc' ? 'desc' : 'asc');
-  };
-  const requestSort = (hour, key) => {
-    setSortConfig(prevConfig => {
-      const direction = (
-        prevConfig.hour === hour &&
-        prevConfig.key === key &&
-        prevConfig.direction === 'asc'
-      ) ? 'desc' : 'asc';
-      return { hour, key, direction };
-    });
-  };
-
-  // Fu
-  const requestNumSort = (key) => { 
-    setNumSort((prevConfig) => ({
-      key: key,
-      direction: prevConfig.direction === 'asc' ? 'desc' : 'asc',
-    }));
-  };;
 
 
   const sortedServiceIds = useMemo(() => {
     if (!sortType && !numSort.key && !sortConfig.key) return serviceIds; // Default to original order
-  
+
     return [...serviceIds].sort((a, b) => {
       const serviceA = data[a];
       const serviceB = data[b];
       const currentHour = new Date().getHours();
-  
+
       if (sortType === 'numSort') {
         if (numSort.key) {
           if (numSort.key === 'id') {
             // Handle 3-digit IDs separately
             const isThreeDigitA = a.length === 3;
             const isThreeDigitB = b.length === 3;
-  
+
             if (isThreeDigitA && !isThreeDigitB) return numSort.direction === 'asc' ? -1 : 1;
             if (!isThreeDigitA && isThreeDigitB) return numSort.direction === 'asc' ? 1 : -1;
-  
+
             // If both are 3-digit or both are not 3-digit, sort normally
             if (a < b) return numSort.direction === 'asc' ? -1 : 1;
             if (a > b) return numSort.direction === 'asc' ? 1 : -1;
@@ -243,7 +203,7 @@ const [sortType, setSortType] = useState('');
             const keyType = numSort.key === 'pgCount' ? 'pg' : 'pv';
             const countA = getPGPVCount(a, currentHour, keyType);
             const countB = getPGPVCount(b, currentHour, keyType);
-  
+
             if (countA < countB) return numSort.direction === 'asc' ? -1 : 1;
             if (countA > countB) return numSort.direction === 'asc' ? 1 : -1;
           }
@@ -252,52 +212,42 @@ const [sortType, setSortType] = useState('');
         if (sortConfig.key && sortConfig.hour !== undefined) {
           const hourDataA = serviceA?.hours[sortConfig.hour] || {};
           const hourDataB = serviceB?.hours[sortConfig.hour] || {};
-  
+
           // Check if either has zero or no traffic data
           const isZeroOrSameA = sortConfig.key === 'pg'
             ? hourDataA.pingenCount === 0 && hourDataA.pingenCountSuccess === 0
             : hourDataA.pinverCount === 0 && hourDataA.pinverCountSuccess === 0;
-  
+
           const isZeroOrSameB = sortConfig.key === 'pg'
             ? hourDataB.pingenCount === 0 && hourDataB.pingenCountSuccess === 0
             : hourDataB.pinverCount === 0 && hourDataB.pinverCountSuccess === 0;
-  
+
           if (isZeroOrSameA && !isZeroOrSameB) return -1;
           if (!isZeroOrSameA && isZeroOrSameB) return 1;
-  
+
           const ratioA = calculateRatio(a, sortConfig.hour, sortConfig.key);
           const ratioB = calculateRatio(b, sortConfig.hour, sortConfig.key);
-  
+
           if (ratioA < ratioB) return sortConfig.direction === 'asc' ? -1 : 1;
           if (ratioA > ratioB) return sortConfig.direction === 'asc' ? 1 : -1;
         }
-      } else if (sortType === 'stringSort') {
-        if (numSort.key) {
-          // Sorting string values for specific columns
-          const stringKey = numSort.key; // Assuming numSort.key holds the column key to sort by
-          const valueA = serviceA[stringKey] || '';
-          const valueB = serviceB[stringKey] || '';
-  
-          if (valueA < valueB) return numSort.direction === 'asc' ? -1 : 1;
-          if (valueA > valueB) return numSort.direction === 'asc' ? 1 : -1;
-        }
       }
-  
+
       return 0;
     });
   }, [serviceIds, numSort, sortConfig, calculateRatio, data, getPGPVCount, sortType]);
-  
-  
+
+
   const handleSort = (type, key, direction, hour) => {
     setSortType(type);
     if (type === 'numSort') {
       setNumSort({ key, direction });
-    } else  if (type === 'sortConfig') {
+    } else if (type === 'sortConfig') {
       setSortConfig(prev => {
         const isSameKey = prev.key === key;
         const isSameHour = prev.hour === hour;
         const newDirection = (isSameKey && isSameHour && prev.direction === 'asc') ? 'desc' : 'asc';
-  
+
         return {
           key,
           hour,
@@ -307,7 +257,7 @@ const [sortType, setSortType] = useState('');
     }
   };
 
-  
+
   const filteredServiceIds = useMemo(() => {
     const query = searchQuery.toLowerCase();
 
@@ -351,7 +301,7 @@ const [sortType, setSortType] = useState('');
 
 
 
-const getCurrentHour = useCallback(() => new Date().getHours(), []);
+  const getCurrentHour = useCallback(() => new Date().getHours(), []);
   // Function to count active services
   const countActiveServices = useCallback(() => {
     const twoHoursAgo = (getCurrentHour() - 2 + 24) % 24;
@@ -374,7 +324,7 @@ const getCurrentHour = useCallback(() => new Date().getHours(), []);
       const service = data[id];
       if (!service) return false;
       for (let i = twoHoursAgo; i <= getCurrentHour(); i++) {
-        if (service.hours[i] && (service.hours[i].pingenCount > 0 || service.hours[i].pinverCount > 0) ) {
+        if (service.hours[i] && (service.hours[i].pingenCount > 0 || service.hours[i].pinverCount > 0)) {
           return false;
         }
       }
@@ -382,21 +332,16 @@ const getCurrentHour = useCallback(() => new Date().getHours(), []);
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
 
-const totalService = countActiveServices() + countNoTrafficServices();
-const  indexofLastItem = currentPage * itemsPerPage;
-const indexofFirstItem = indexofLastItem - itemsPerPage;
-const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem);
+  const totalService = countActiveServices() + countNoTrafficServices();
+  const indexofLastItem = currentPage * itemsPerPage;
+  const indexofFirstItem = indexofLastItem - itemsPerPage;
+  const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem);
 
 
   //add graph popup as when x is clicked it should close
- 
-  
-
-
-
-
 
   return (
+    <>
     <div className="custom-search-col">
       <div className="control">
         <div className="filter-controls">
@@ -410,19 +355,19 @@ const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem)
         />
         <div className='stats-data'>
           <div className='stats-data-item'>
-                    <h3>All IDs</h3>
-                    <p className='green'>{totalService}</p>
-                  </div>
-                  <div className='stats-data-item'>
-                    <h3>Active IDs</h3>
-                    <p className='green'>{countActiveServices()}</p>
-                  </div>
-                  <div className='stats-data-item'>
-                    <h3>No Traffic</h3>
-                    <p className='red'>{countNoTrafficServices()|0}</p>
-                  </div>
+            <h3>All IDs</h3>
+            <p className='green'>{totalService}</p>
+          </div>
+          <div className='stats-data-item'>
+            <h3>Active IDs</h3>
+            <p className='green'>{countActiveServices()}</p>
+          </div>
+          <div className='stats-data-item'>
+            <h3>No Traffic</h3>
+            <p className='red'>{countNoTrafficServices() | 0}</p>
+          </div>
         </div>
-        
+
       </div>
       <div className="table-container">
         <table className="table table-bordered">
@@ -458,14 +403,14 @@ const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem)
                   <i className="fas fa-arrow-up"></i>
                 </button>
                 <button
-                  onClick={() => handleSort('numSort','id', 'desc')}
+                  onClick={() => handleSort('numSort', 'id', 'desc')}
                   className={`sort-button ${numSort.key === 'id' && numSort.direction === 'desc' ? 'active' : ''}`}
                   aria-label="Sort descending"
                 >
                   <i className="fas fa-arrow-down"></i>
                 </button>
               </th>
-  
+
               <th className="sticky_head-horizontal-3" rowSpan="2">
                 <MultiSelectDropdown
 
@@ -514,14 +459,14 @@ const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem)
               >
                 Pg Count
                 <button
-                  onClick={() => handleSort('numSort','pgCount', 'asc')}
+                  onClick={() => handleSort('numSort', 'pgCount', 'asc')}
                   className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
                   aria-label="Sort ascending"
                 >
                   <i className="fas fa-arrow-up"></i>
                 </button>
                 <button
-                  onClick={() => handleSort('numSort','pgCount', 'desc')}
+                  onClick={() => handleSort('numSort', 'pgCount', 'desc')}
                   className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
                   aria-label="Sort descending"
                 >
@@ -541,12 +486,15 @@ const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem)
                   <i className="fas fa-arrow-up"></i>
                 </button>
                 <button
-                  onClick={() => handleSort('numSort','pvCount', 'desc')}
+                  onClick={() => handleSort('numSort', 'pvCount', 'desc')}
                   className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
                   aria-label="Sort descending"
                 >
                   <i className="fas fa-arrow-down"></i>
                 </button>
+              </th>
+              <th className='sticky_head_horizontal-6' rowSpan={2}>
+                Logs
               </th>
               {hours.map((hour, index) => (
                 <th className="sticky_head" key={index} colSpan="2">
@@ -557,47 +505,47 @@ const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem)
               ))}
             </tr>
             <tr className="hrs">
-  {hours.map((hour, index) => (
-    <React.Fragment key={index}>
-      <th>
-        <span className="pg">PG</span>
-        <span className="pgs">PGS</span>
-        <div className="sort-buttons">
-          <button
-            onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
-            className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
-          >
-            <i className="fas fa-arrow-up"></i>
-          </button>
-          <button
-            onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
-            className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
-          >
-            <i className="fas fa-arrow-down"></i>
-          </button>
-        </div>
-      </th>
-      <th>
-        <span className="pg">PV</span>
-        <span className="pgs">PVS</span>
-        <div className="sort-buttons">
-          <button
-            onClick={() => handleSort('sortConfig', 'pv', 'asc', hour)}
-            className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
-          >
-            <i className="fas fa-arrow-up"></i>
-          </button>
-          <button
-            onClick={() => handleSort('sortConfig', 'pv', 'desc', hour)}
-            className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
-          >
-            <i className="fas fa-arrow-down"></i>
-          </button>
-        </div>
-      </th>
-    </React.Fragment>
-  ))}
-</tr>
+              {hours.map((hour, index) => (
+                <React.Fragment key={index}>
+                  <th>
+                    <span className="pg">PG</span>
+                    <span className="pgs">PGS</span>
+                    <div className="sort-buttons">
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
+                      >
+                        <i className="fas fa-arrow-up"></i>
+                      </button>
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
+                      >
+                        <i className="fas fa-arrow-down"></i>
+                      </button>
+                    </div>
+                  </th>
+                  <th>
+                    <span className="pg">PV</span>
+                    <span className="pgs">PVS</span>
+                    <div className="sort-buttons">
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pv', 'asc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
+                      >
+                        <i className="fas fa-arrow-up"></i>
+                      </button>
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pv', 'desc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
+                      >
+                        <i className="fas fa-arrow-down"></i>
+                      </button>
+                    </div>
+                  </th>
+                </React.Fragment>
+              ))}
+            </tr>
 
           </thead>
           <tbody>
@@ -610,12 +558,21 @@ const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem)
                     <td className="sticky-1">{info?.territory || '-'}</td>
                     <td>{info?.operator || '-'}</td>
                     <td className="service-id-cell" onClick={handleModalToggle}>
-      {serviceId}
-      <Link to={`/graph/${serviceId}`} className="hover-button">
-        <i className="fas fa-chart-line"></i>
-      </Link>
-    
-    </td>
+                      {serviceId}
+                      <Link
+                        to={`/graph/${serviceId}`}
+                        className="hover-button"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <i className="fas fa-chart-line"></i>
+                      </Link>
+
+                      {/* import model file GraphDatsa.js */}
+
+
+                    </td>
+
                     <td className="sticky-3">{info?.billername || '-'}</td>
                     <td>{info?.servicename || '-'}</td>
                     <td>{info?.partner || '-'}</td>
@@ -626,6 +583,23 @@ const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem)
                     <td className="sticky-5">
                       {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
                     </td>
+
+                    <td className='sticky-6'>
+
+                      <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
+                        <i className="fas fa-file-alt">
+                        </i>
+                      </Link>
+
+
+
+
+
+                    </td>
+
+
+
+
                     {hours.map((hour, index) => {
                       const hourData = serviceHours[hour] || {};
                       return (
@@ -741,10 +715,15 @@ const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem)
             </button>
           )}
         </div>
-        <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
       </div>
+    
     </div>
-
+  <Modal
+  isOpen={isModalOpen}
+  onClose={handleModalToggle}
+  content={<GraphData />}
+/>
+</>
 
   );
 };

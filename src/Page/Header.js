@@ -65,12 +65,6 @@ const Header = () => {
         }
       });
 
-      // Add dummy notification for testing
-      newNotifications.push({
-        id: new Date().getTime(),
-        message: 'Service ID 1234 has no traffic in the last 2 hours.',
-        timestamp: new Date().toLocaleString()
-      });
 
       if (newNotifications.length > 0) {
         const updatedNotifications = [...notifications, ...newNotifications];
@@ -147,13 +141,7 @@ const Header = () => {
         </div>
 
       )}  
-<div className="notifications-container">
-    <div  className="notification-item">
-      <div className="notification-message"> ID  1234 is not active from 2 hours    </div>
-      <div className="notification-timestamp">  12 AUgust 12 Am     </div>
-    </div>
- 
-</div>
+
    
     </>
   );

@@ -1,6 +1,11 @@
+body{
+  font-family: "Moderustic", sans-serif !important;
+}
+
 .multi-select-dropdown {
     position: relative;
     display: inline-block;
+    font-family: "Moderustic", sans-serif !important;
  
   }
   
@@ -9,7 +14,7 @@
     border: 1px solid #ccc;
     padding: 8px 12px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 13px;
     display: flex;
     align-items: center;
     justify-content: space-between;
