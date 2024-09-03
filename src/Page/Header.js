@@ -57,11 +57,16 @@ const Header = () => {
         }
 
         if (!hasRecentData) {
-          newNotifications.push({
-            id: new Date().getTime(),
-            message: `Service ID ${serviceId} has no traffic in the last 2 hours.`,
-            timestamp: new Date().toLocaleString()
-          });
+        //check for unique id to avoid duplicate notifications
+          const notificationId = `${serviceId}-${currentTime}`;
+          const existingNotification = notifications.find(notification => notification.id === notificationId);
+          if (!existingNotification) {
+            newNotifications.push({
+              id: notificationId,
+              message: `No data has been received for service ID ${serviceId} in the last 2 hours.`,
+              timestamp: new Date().toLocaleString(),
+            });
+          }
         }
       });
 
@@ -133,6 +138,7 @@ const Header = () => {
           ) : (
             notifications.map((notification, index) => (
               <div key={index} className="notification-item">
+                <div className="notification-id">{notification.notificationId}</div>
                 <div className="notification-message">{notification.message}</div>
                 <div className="notification-timestamp">{notification.timestamp}</div>
               </div>

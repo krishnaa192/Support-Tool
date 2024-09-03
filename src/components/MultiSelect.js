@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './select.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faCheckSquare, faChevronDown, faSquare } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faCheckSquare, faChevronDown, faSquare, faFilter } from '@fortawesome/free-solid-svg-icons';
 
 const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setSelectedValue }) => {
-  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [tempSelectedOptions, setTempSelectedOptions] = useState([]); // Temp state for selections
   const [sortedOptions, setSortedOptions] = useState([]);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isApplied, setIsApplied] = useState(false); // Track if "Apply" has been pressed
 
   useEffect(() => {
     // Sort options in ascending order
@@ -24,12 +25,13 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
     });
     setFilteredOptions(filtered);
 
+    // Initialize tempSelectedOptions based on selectedValue
     if (selectedValue === 'all') {
-      setSelectedOptions(sorted);
+      setTempSelectedOptions(sorted);
     } else {
-      setSelectedOptions(
-        typeof selectedValue === 'string' 
-          ? selectedValue.split(',').filter(Boolean) 
+      setTempSelectedOptions(
+        typeof selectedValue === 'string'
+          ? selectedValue.split(',').filter(Boolean)
           : []
       );
     }
@@ -38,44 +40,50 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
   const handleCheckboxChange = (value) => {
     if (value === 'all') {
       if (isAllSelected()) {
-        setSelectedOptions([]);
-        setSelectedValue('');
-      }
-       else {
-        setSelectedOptions(sortedOptions);
-        setSelectedValue('all');
+        setTempSelectedOptions([]);
+      } else {
+        setTempSelectedOptions(sortedOptions);
       }
     } else {
-      setSelectedOptions(prevSelected => {
+      setTempSelectedOptions(prevSelected => {
         const newSelection = prevSelected.includes(value)
           ? prevSelected.filter(item => item !== value)
           : [...prevSelected, value];
-        
-        const allSelected = newSelection.length === sortedOptions.length;
-        setSelectedValue(allSelected ? 'all' : newSelection.join(','));
         return newSelection;
       });
     }
   };
 
+  const handleApply = () => {
+    // Apply the temporary selected options when the Apply button is clicked
+    setSelectedValue(tempSelectedOptions.join(','));
+    setIsApplied(true); // Mark as applied
+  };
+
   const handleClear = () => {
-    setSelectedOptions([]);
-    setSelectedValue('');
+    setTempSelectedOptions([]);
     setSearchQuery(''); // Clear the search query when clearing selections
+    setIsApplied(false); // Reset apply status
   };
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
   };
 
-  const isSelected = (value) => selectedOptions.includes(value);
+  const isSelected = (value) => tempSelectedOptions.includes(value);
 
-  const isAllSelected = () => selectedOptions.length === sortedOptions.length && sortedOptions.length > 0;
+  const isAllSelected = () => tempSelectedOptions.length === sortedOptions.length && sortedOptions.length > 0;
+  //after applyin filter on pressing apply button but when from unchecking all option checking all option again without usign apply it should not show filter icon
+  const isAllSelectedWithoutApply = () => selectedValue === 'all' && !isApplied;
+
 
   return (
     <div className="multi-select-dropdown">
       <button className="dropdown-toggle" type="button">
-        {title} <FontAwesomeIcon icon={faChevronDown} />
+        {title} 
+        <FontAwesomeIcon icon={faChevronDown} />
+        {/* Show the filter icon only after applying and not all options are selected */}
+        {isApplied && !isAllSelected()   && <FontAwesomeIcon icon={faFilter} style={{ marginLeft: '8px', color: 'red' }} />}
       </button>
       <div className="dropdown-menu">
         <input
@@ -107,6 +115,9 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
           </button>
           <button onClick={handleClear}>
             <FontAwesomeIcon icon={faTrashAlt} />
+          </button>
+          <button className='apply' onClick={handleApply}>
+            Apply
           </button>
         </div>
       </div>

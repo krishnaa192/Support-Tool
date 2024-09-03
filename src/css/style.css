@@ -668,12 +668,14 @@ th.sticky_head-horizontal-5{
   padding:3px 0px 3px 0px !important;
 }
 
-
+.table-container{
+  height: 85vh !important;
+}
 
 
 
 .table {
-  height: 85vh !important;
+
  /* max-width: 240vw !important; */
  table-layout: auto !important;
   width: 100% !important;
@@ -957,6 +959,9 @@ th.pv-col, td.pv-col {
 .dropdown-menu a:hover {
   background-color: #f1f1f1;
 }
+ .model:hover{
+  background-color: #f1f1f1;
+}
 
 .service-id-cell:hover .dropdown-menu {
   display: block;
@@ -965,6 +970,7 @@ th.pv-col, td.pv-col {
 /* Pagination controls styling */
 .pagination-controls {
   display: flex;
+  
   justify-content: center;
   align-items: center;
   margin-top: 8px;
@@ -1015,7 +1021,65 @@ th.pv-col, td.pv-col {
   font-style: normal;
 }
 
-.sticky-6 i{
-  font-size: 18px;
-  color: white;
+
+/* Container for the dropdown */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Button styling */
+.dropbtn {
+  background-color: #f8f9fa;
+  color: black;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* The dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  padding: 12px 16px;
+  border-radius: 4px;
+}
+
+i{
+  color: black;
+}
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black !important;
+  padding: 12px;
+  text-decoration: none;
+  display: block;
+  border-radius: 4px;
+ 
+}
+
+/* Change color on hover */
+.dropdown-content a:hover {
+  background-color: #ddd;
+  padding: 12px;
+}
+
+/* Show the dropdown content when hovering over the dropdown container */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Icons inside the dropdown */
+.dropdown-content i {
+  margin-right: 12px;
+}
+.model{
+  cursor: pointer;
+  color: black;
+  padding: 8px;
+
+  
 }

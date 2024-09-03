@@ -3,67 +3,21 @@ import ApiRequest from './APi'; // Ensure the correct import path for ApiRequest
 
 export const fetchDataAndCount = async () => {
     try {
-        const result = await ApiRequest();
-
-        const inactiveData = {};
-        let totalCount = 0;
-        let inactiveCount = 0;
-        let activeCount = 0;
-        let noTrafficCount = 0;
-
-        result.forEach(item => {
-            const {
-                app_serviceid,
-                time,
-                pingenCount,
-                pinverCount,
-            } = item;
-
-            if (!inactiveData[app_serviceid]) {
-                inactiveData[app_serviceid] = {
-                    hours: Array.from({ length: 24 }, () => ({
-                        pingenCount: 0,
-                        pinverCount: 0,
-                    })),
-                };
-                totalCount += 1;
-            }
-
-            const hour = parseInt(time, 10);
-            inactiveData[app_serviceid].hours[hour] = {
-                pingenCount: pingenCount || 0,
-                pinverCount: pinverCount || 0,
-            };
-        });
-
-        const currentHour = new Date().getHours();
-        Object.keys(inactiveData).forEach(serviceId => {
-            const lastHourData0 = inactiveData[serviceId].hours[(currentHour - 0 + 24) % 24];
-            const lastHourData1 = inactiveData[serviceId].hours[(currentHour - 1 + 24) % 24];
-
-            const noTrafficLastTwoHours = 
-                lastHourData0.pingenCount === 0 && lastHourData0.pinverCount === 0 &&
-                lastHourData1.pingenCount === 0 && lastHourData1.pinverCount === 0;
-
-            if (noTrafficLastTwoHours) {
-                noTrafficCount += 1;
-                inactiveCount += 1;
-            } else {
-                activeCount += 1;
-            }
-        });
+        const response = await ApiRequest();
+        const data = response.data || [];
 
         return {
-            data: result,
-            totalCount,
-            inactiveCount,
-            activeCount,
-            noTrafficCount,
+            data,
+            count: data.length
         };
     } catch (error) {
         console.error("Error fetching data:", error);
-        throw error;
+        return {
+            data: [],
+            count: 0
+        };
     }
+    
 };
 
 export const processDataByServiceId = (data) => {
@@ -97,13 +51,14 @@ export const processDataByServiceId = (data) => {
                     billername: billername || '',
                     service_partner: service_partner || ''
                 },
-                hours: Array.from({ length: 24 }, () => ({
-                    hour: 0,
+              //from 0 to current hour
+                hours: Array.from({ length: 24 }, (_, i) => ({
+                    hour: i,
                     pingenCount: 0,
                     pingenCountSuccess: 0,
                     pinverCount: 0,
-                    pinverCountSuccess: 0,
-                })),
+                    pinverCountSuccess: 0
+                }))
             };
         }
 

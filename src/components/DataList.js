@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 // eslint-disable
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo,useRef } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/style.css';
 import '../css/dropdown.css';
@@ -9,14 +9,14 @@ import ApiRequest from '../APi';
 import MultiSelectDropdown from './MultiSelect';
 import GraphData from '../Page/GraphData';
 
+
+
 const DataList = () => {
   const [data, setData] = useState({});
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [sortType, setSortType] = useState('');
-  const [sortBy, setSortBy] = useState('')
-
   const [sortConfig, setSortConfig] = useState({});
   const [numSort, setNumSort] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,10 +27,8 @@ const DataList = () => {
   const [serviceNameFilter, setserviceNameFilter] = useState('all')
   const [billerNameFilter, setBillerNameFilter] = useState('all');
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 55;
 
-
+const serviceId = useRef(null);
 
 
   useEffect(() => {
@@ -156,9 +154,9 @@ const DataList = () => {
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
     if (ratio <= 0.25) return 'red';
-    if (ratio > 0.25 && ratio < 0.4) return 'light-orange';
+    if (ratio > 0.25 && ratio < 0.4) return 'orange';
     if (ratio >= 0.4 && ratio <= 0.6) return 'orange';
-    if (ratio > 0.6 && ratio <= 0.8) return 'light-green';
+    if (ratio > 0.6 && ratio <= 0.8) return 'green';
     if (ratio > 0.8) return 'dark-green';
     return '';
   };
@@ -214,16 +212,6 @@ const DataList = () => {
           const hourDataB = serviceB?.hours[sortConfig.hour] || {};
 
           // Check if either has zero or no traffic data
-          const isZeroOrSameA = sortConfig.key === 'pg'
-            ? hourDataA.pingenCount === 0 && hourDataA.pingenCountSuccess === 0
-            : hourDataA.pinverCount === 0 && hourDataA.pinverCountSuccess === 0;
-
-          const isZeroOrSameB = sortConfig.key === 'pg'
-            ? hourDataB.pingenCount === 0 && hourDataB.pingenCountSuccess === 0
-            : hourDataB.pinverCount === 0 && hourDataB.pinverCountSuccess === 0;
-
-          if (isZeroOrSameA && !isZeroOrSameB) return -1;
-          if (!isZeroOrSameA && isZeroOrSameB) return 1;
 
           const ratioA = calculateRatio(a, sortConfig.hour, sortConfig.key);
           const ratioB = calculateRatio(b, sortConfig.hour, sortConfig.key);
@@ -243,17 +231,7 @@ const DataList = () => {
     if (type === 'numSort') {
       setNumSort({ key, direction });
     } else if (type === 'sortConfig') {
-      setSortConfig(prev => {
-        const isSameKey = prev.key === key;
-        const isSameHour = prev.hour === hour;
-        const newDirection = (isSameKey && isSameHour && prev.direction === 'asc') ? 'desc' : 'asc';
-
-        return {
-          key,
-          hour,
-          direction: newDirection,
-        };
-      });
+      setSortConfig({ key, direction, hour });
     }
   };
 
@@ -286,20 +264,13 @@ const DataList = () => {
   }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter, data, filterData]);
 
 
-  // Toggle popup visibility
+  // Toggle popup visibility  by clicking on service id and i used useparam to get the id
+
   const handleModalToggle = (e) => {
-    e.preventDefault(); // Prevent default link behavior
-    setModalOpen(prev => !prev);
+    serviceId.current = e.target.innerText;
+    setModalOpen(!isModalOpen);
+
   };
-  // Step 3: Pagination Controls
-  const totalPages = Math.ceil(filteredServiceIds.length / itemsPerPage);
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  }
-
-
 
   const getCurrentHour = useCallback(() => new Date().getHours(), []);
   // Function to count active services
@@ -332,10 +303,7 @@ const DataList = () => {
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
 
-  const totalService = countActiveServices() + countNoTrafficServices();
-  const indexofLastItem = currentPage * itemsPerPage;
-  const indexofFirstItem = indexofLastItem - itemsPerPage;
-  const currentItems = filteredServiceIds.slice(indexofFirstItem, indexofLastItem);
+  const totalService = countActiveServices() + countNoTrafficServices()
 
 
   //add graph popup as when x is clicked it should close
@@ -450,8 +418,6 @@ const DataList = () => {
                   selectedValue={servicePartnerFilter}
                   setSelectedValue={setServicePartnerFilter}
                 />
-
-
               </th>
               <th
                 className="sticky_head-horizontal-4"
@@ -494,7 +460,7 @@ const DataList = () => {
                 </button>
               </th>
               <th className='sticky_head_horizontal-6' rowSpan={2}>
-                Logs
+                Action
               </th>
               {hours.map((hour, index) => (
                 <th className="sticky_head" key={index} colSpan="2">
@@ -548,9 +514,9 @@ const DataList = () => {
             </tr>
 
           </thead>
-          <tbody>
-            {currentItems.length > 0 ? (
-              currentItems.map(serviceId => {
+          <tbody> 
+            {filteredServiceIds.length > 0 ? (
+              filteredServiceIds.map(serviceId => {
                 const { info, hours: serviceHours } = data[serviceId] || {};
 
                 return (
@@ -559,18 +525,6 @@ const DataList = () => {
                     <td>{info?.operator || '-'}</td>
                     <td className="service-id-cell" onClick={handleModalToggle}>
                       {serviceId}
-                      <Link
-                        to={`/graph/${serviceId}`}
-                        className="hover-button"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <i className="fas fa-chart-line"></i>
-                      </Link>
-
-                      {/* import model file GraphDatsa.js */}
-
-
                     </td>
 
                     <td className="sticky-3">{info?.billername || '-'}</td>
@@ -585,21 +539,27 @@ const DataList = () => {
                     </td>
 
                     <td className='sticky-6'>
+                      <div className='dropdown'>
+                        <button className='dropbtn'><i class="fa fa-tasks"></i></button>
+                        <div className='dropdown-content'>
 
-                      <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
-                        <i className="fas fa-file-alt">
-                        </i>
+                    <div className='model' onClick={handleModalToggle}>
+                        <i class="fa-solid fa-chart-line" ></i>
+                        Graph
+                    </div>
+                       
+                          <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
+                          <i class="fa-solid fa-file-circle-plus"></i>  Logs
                       </Link>
 
+                      <a href=''>
+                        <i class="fa-solid fa-download"></i>
+                        Export
+                      </a>
+                        </div>
 
-
-
-
+                      </div>
                     </td>
-
-
-
-
                     {hours.map((hour, index) => {
                       const hourData = serviceHours[hour] || {};
                       return (
@@ -637,91 +597,14 @@ const DataList = () => {
             )}
           </tbody>
         </table>
-        <div className='pagination-controls'>
-          {/* Hide the Previous button if on the first page */}
-          {currentPage > 1 && (
-            <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-              <i className="fas fa-arrow-left"></i> {/* Change to desired icon */}
-
-            </button>
-          )}
-
-          {/* Display page numbers */}
-          <span className='page-numbers'>
-            {/* Show the first page */}
-            {currentPage > 3 && (
-              <>
-                <button
-                  onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
-                >
-                  1
-                </button>
-                {currentPage > 4 && <span>...</span>}
-              </>
-            )}
-
-            {/* Show up to 2 pages before the current page */}
-            {Array.from({ length: 2 }, (_, index) => {
-              const pageNumber = currentPage - 2 + index;
-              return pageNumber > 1 && pageNumber < currentPage ? (
-                <button
-                  key={pageNumber}
-                  onClick={() => handlePageChange(pageNumber)}
-                  className={currentPage === pageNumber ? 'active' : ''}
-                >
-                  {pageNumber}
-                </button>
-              ) : null;
-            })}
-
-            {/* Show the current page */}
-            <button disabled className='active'>
-              {currentPage}
-            </button>
-
-            {/* Show up to 2 pages after the current page */}
-            {Array.from({ length: 2 }, (_, index) => {
-              const pageNumber = currentPage + 1 + index;
-              return pageNumber < totalPages ? (
-                <button
-                  key={pageNumber}
-                  onClick={() => handlePageChange(pageNumber)}
-                  className={currentPage === pageNumber ? 'active' : ''}
-                >
-                  {pageNumber}
-                </button>
-              ) : null;
-            })}
-
-            {/* Show the last page */}
-            {currentPage < totalPages - 3 && (
-              <>
-                {currentPage < totalPages - 4 && <span>...</span>}
-                <button
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={currentPage === totalPages}
-                >
-                  {totalPages}
-                </button>
-              </>
-            )}
-          </span>
-
-          {/* Hide the Next button if on the last page */}
-          {currentPage < totalPages && (
-            <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-              <i className="fas fa-arrow-right"></i> {/* Change to desired icon */}
-            </button>
-          )}
-        </div>
+       
       </div>
     
     </div>
   <Modal
   isOpen={isModalOpen}
   onClose={handleModalToggle}
-  content={<GraphData />}
+  content={<GraphData Id= {serviceId} />}
 />
 </>
 
