@@ -1054,7 +1054,9 @@ i{
 /* Links inside the dropdown */
 .dropdown-content a {
   color: black !important;
-  padding: 12px;
+  padding: 10px;
+  padding-bottom: 8px;
+  font-size: 16px;
   text-decoration: none;
   display: block;
   border-radius: 4px;
@@ -1075,11 +1077,20 @@ i{
 /* Icons inside the dropdown */
 .dropdown-content i {
   margin-right: 12px;
+  
 }
 .model{
   cursor: pointer;
   color: black;
   padding: 8px;
+  font-size: 16px
 
   
+}
+.dropdown button{
+  background-color: #f8f9fa;
+  color: black;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
 }

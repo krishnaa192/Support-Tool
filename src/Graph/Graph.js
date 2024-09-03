@@ -68,14 +68,6 @@ const D3Chart = ({ data, title }) => {
       .attr('stroke-width', 2)
       .attr('d', lineGenerator);
 
-    // Add label for the line at the top right
-    g.append('text')
-      .attr('class', 'line-label')
-      .attr('x', innerWidth - 10) // Position near the right edge
-      .attr('y', margin.top + 20) // Position near the top
-      .attr('text-anchor', 'end')
-      .attr('fill', 'green') // Match label color with the line color
-      .text('PVS');
 
     // Clear previous dots
     g.selectAll('.dot').remove();
@@ -98,7 +90,7 @@ const D3Chart = ({ data, title }) => {
          PGS: ${d.pingenCountSuccess}<br/>
           PV: ${d.pinverCount}<br/>
            PVS: ${d.pinverCountSuccess}<br/>
-            CR: ${d.pingenCountSuccess ? (d.pinverCountSuccess / d.pingenCount).toFixed(2) : 'N/A'}
+            CR: ${d.pingenCountSuccess ? ((d.pinverCountSuccess / d.pingenCount)*100).toFixed(2) : 'N/A'}
           `);
       })
       .on('mousemove', (event) => {
@@ -110,11 +102,7 @@ const D3Chart = ({ data, title }) => {
         tooltip.style('opacity', 0);
       });
 
-    // Update the title
-    svg.select('text.title')
-      .attr('x', width / 2)
-      .attr('y', margin.top )
-      .text(title);
+  
 
   }, [data, title]);
 
@@ -123,15 +111,10 @@ const D3Chart = ({ data, title }) => {
       <svg
         ref={svgRef}
         width={800}
-        height={400}
+        height={500}
       >
-        <text
-          className="title"
-          textAnchor="middle"
-          fontSize="16"
-        >
-          {title}
-        </text>
+      
+       
       </svg>
       <div
         ref={tooltipRef}

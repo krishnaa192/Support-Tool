@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import './select.css';
+import '../css/select.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faCheckSquare, faChevronDown, faSquare, faFilter } from '@fortawesome/free-solid-svg-icons';
 
@@ -74,7 +74,7 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
 
   const isAllSelected = () => tempSelectedOptions.length === sortedOptions.length && sortedOptions.length > 0;
   //after applyin filter on pressing apply button but when from unchecking all option checking all option again without usign apply it should not show filter icon
-  const isAllSelectedWithoutApply = () => selectedValue === 'all' && !isApplied;
+
 
 
   return (

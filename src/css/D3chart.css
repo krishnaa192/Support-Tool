@@ -1,105 +1,118 @@
-/* D3chart.css */
-
-/* Overall container styling */
+/* Existing styles */
 .graph-data {
+  color: black;
+  padding: 20px;
+  background-color: #6170b6;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.graph-data h2 {
+  font-size: 24px;
+  margin-left: 50%;
+}
+
+.data-card {
+  color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.data-card ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.data-card li {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.data-card strong {
+  color: #333;
+}
+
+.graphs {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.graphs p {
+  font-size: 16px;
+  color: #666;
+}
+
+.data-stats {
+  background: white;
+  width: 300px;
   display: flex;
-  flex-direction: column;
+  height: 500px !important;
+  flex-direction: row;
+  font-size: 15px;
+  flex-wrap: wrap;
+  align-content: space-around;
+}
+
+ul{
+  list-style-type: none;
+}
+.data-stats ul{
+  padding: 12px;
+  border: 2px solid #ebecf1;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.graph-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
   justify-content: center;
-  align-items: center;
-width: 100%;
+}
 
-    font-family: Arial, sans-serif;
-    padding: 20px;
-background-color: cadetblue;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column; /* Stack children vertically */
-    color: black;
-  }
-  
-  /* Title styling */
-  .graph-data h1 {
-    font-size: 24px;
-    color: #fff;
-    margin-bottom: 20px;
-  }
-  
-  /* Row layout for children */
-  .graph-data .row {
-    display: flex;
-    flex-wrap: wrap; /* Wrap if needed */
-    gap: 20px; /* Space between elements */
-    margin-bottom: 20px;
-  }
-  
-  /* Styling for data card, tab, and graph containers */
-  .data-card, .tab, .graphs {
-    background: #fff;
-    padding: 15px;
-    font-size: 14px;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
+/* Tooltip Styles */
+.tooltip {
+  position: absolute;
+  background-color: #333;
+  color: #fff;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  pointer-events: none; /* Ensure tooltips don't interfere with mouse events */
+  opacity: 0; /* Start as invisible */
+  transition: opacity 0.3s ease;
+  z-index: 1000; /* Ensure it appears on top of other elements */
+}
 
-  /* Specific styling for tab */
-  .tab {
-    flex: 1; /* Adjust flex to make it fit appropriately */
-  }
-  
-  /* Specific styling for graphs */
-  .graphs {
-    width: 1039px;
-    min-height: 400px; /* Ensure it has enough height for the chart */
-  }
-  
-  /* List items in the data card */
-  .data-card ul {
-    display: flex;
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .data-card li {
-    padding: 8px 18px;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .data-card li:last-child {
-    border-bottom: none;
-  }
- 
-  
-  /* Tab styling */
-  .tab select {
-    width: 100%; /* Full width for select box */
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #fff;
-    cursor: pointer;
-  }
-  
-  .tab select:focus {
-    outline: none;
-    border-color: #0056b3;
-  }
-  
-  /* Tooltip styling */
-  .tooltip {
-    position: absolute;
-    opacity: 0;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 4px 8px;
-    pointer-events: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  svg{
-    background-color: bisque;
-    width: 100%;
-  }
+.tooltip.visible {
+  opacity: 1; /* Show tooltip */
+}
+
+.tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.tooltip-arrow.top {
+  border-width: 5px 5px 0 5px;
+  border-color: #333 transparent transparent transparent;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tooltip-arrow.bottom {
+  border-width: 0 5px 5px 5px;
+  border-color: transparent transparent #333 transparent;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}

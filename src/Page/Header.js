@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DataList from '../components/DataList';
 import InactiveData from '../components/InactiveData';
 import '../css/style.css';
-import '../header.css';
+import '../css/header.css';
 import { fetchDataAndCount, processDataByServiceId } from '../utils';
 
 const Header = () => {
@@ -32,7 +32,7 @@ const Header = () => {
     const checkAlerts = () => {
       const currentTime = new Date().getTime();
       const lastCheckTime = localStorage.getItem('lastCheckTime');
-      const interval = 45 * 60 * 1000;
+      const interval = 45 * 60 * 1000; // 45 minutes
 
       if (lastCheckTime && currentTime - lastCheckTime < interval) {
         return;
@@ -57,7 +57,6 @@ const Header = () => {
         }
 
         if (!hasRecentData) {
-        //check for unique id to avoid duplicate notifications
           const notificationId = `${serviceId}-${currentTime}`;
           const existingNotification = notifications.find(notification => notification.id === notificationId);
           if (!existingNotification) {
@@ -70,7 +69,6 @@ const Header = () => {
         }
       });
 
-
       if (newNotifications.length > 0) {
         const updatedNotifications = [...notifications, ...newNotifications];
         setNotifications(updatedNotifications);
@@ -81,7 +79,7 @@ const Header = () => {
     };
 
     checkAlerts();
-    const intervalId = setInterval(checkAlerts, 45 * 60 * 1000);
+    const intervalId = setInterval(checkAlerts, 45 * 60 * 1000); // Check every 45 minutes
 
     return () => clearInterval(intervalId);
   }, [loading, data, notifications]);
@@ -90,7 +88,7 @@ const Header = () => {
     const timer = setInterval(() => {
       const currentTime = new Date().getTime();
       const updatedNotifications = notifications.filter(notification => {
-        const notificationTime = new Date(notification.id).getTime();
+        const notificationTime = new Date(notification.timestamp).getTime();
         return currentTime - notificationTime < 6 * 60 * 60 * 1000; // 6 hours
       });
 
@@ -132,23 +130,19 @@ const Header = () => {
       {tab === 'inactive' && <InactiveData data={data} />}
       {tab === 'notification' && (
         <div className="notifications-container">
-          
           {notifications.length === 0 ? (
             <p className="no-notifications">No notifications at the moment.</p>
           ) : (
             notifications.map((notification, index) => (
               <div key={index} className="notification-item">
-                <div className="notification-id">{notification.notificationId}</div>
+                <div className="notification-id">{notification.id}</div>
                 <div className="notification-message">{notification.message}</div>
                 <div className="notification-timestamp">{notification.timestamp}</div>
               </div>
             ))
           )}
         </div>
-
-      )}  
-
-   
+      )}
     </>
   );
 };

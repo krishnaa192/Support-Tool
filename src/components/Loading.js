@@ -7,7 +7,7 @@ function Loading() {
   return (
     <div className='mid'>
         <div className='loader'>
-        <LifeLine color="#cc3197" size="medium" text="Hang on ,till I will load the  API for you" textColor="#NaNNaNNaN" />
+        <LifeLine color="#cc3197" size="medium" text="Hang on" textColor="#NaNNaNNaN" />
         </div>
    
     </div>

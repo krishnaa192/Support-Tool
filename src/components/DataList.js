@@ -1,13 +1,14 @@
 /* eslint-disable no-unused-vars */
 // eslint-disable
-import React, { useEffect, useState, useCallback, useMemo,useRef } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/style.css';
 import '../css/dropdown.css';
-import Modal from './Model';
 import ApiRequest from '../APi';
 import MultiSelectDropdown from './MultiSelect';
-import GraphData from '../Page/GraphData';
+import * as XLSX from 'xlsx';
+import Loading from './Loading';
+
 
 
 
@@ -15,7 +16,7 @@ const DataList = () => {
   const [data, setData] = useState({});
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
-  const [isModalOpen, setModalOpen] = useState(false);
+
   const [sortType, setSortType] = useState('');
   const [sortConfig, setSortConfig] = useState({});
   const [numSort, setNumSort] = useState({});
@@ -28,7 +29,8 @@ const DataList = () => {
   const [billerNameFilter, setBillerNameFilter] = useState('all');
 
 
-const serviceId = useRef(null);
+
+  const serviceId = useRef(null);
 
 
   useEffect(() => {
@@ -150,7 +152,6 @@ const serviceId = useRef(null);
   }, [data]);
   ;
 
-
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
     if (ratio <= 0.25) return 'red';
@@ -172,8 +173,6 @@ const serviceId = useRef(null);
     }
     return 0;
   }, [data]);
-
-
 
   const sortedServiceIds = useMemo(() => {
     if (!sortType && !numSort.key && !sortConfig.key) return serviceIds; // Default to original order
@@ -263,14 +262,7 @@ const serviceId = useRef(null);
     return partnerByFilter;
   }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter, data, filterData]);
 
-
   // Toggle popup visibility  by clicking on service id and i used useparam to get the id
-
-  const handleModalToggle = (e) => {
-    serviceId.current = e.target.innerText;
-    setModalOpen(!isModalOpen);
-
-  };
 
   const getCurrentHour = useCallback(() => new Date().getHours(), []);
   // Function to count active services
@@ -305,308 +297,357 @@ const serviceId = useRef(null);
 
   const totalService = countActiveServices() + countNoTrafficServices()
 
+  // Function to download Excel file
+  const downloadExcel = (serviceId) => {
+    const service = data[serviceId];
+    if (!service) return;
 
-  //add graph popup as when x is clicked it should close
+    const { info, hours } = service;
+
+    // Create a new workbook and worksheet
+    const wb = XLSX.utils.book_new();
+
+    // Define headers based on your example format
+    const metadataHeaders = [
+        'APP_SERVICEID', 'Biller Name', 'Service Name', 'Ad Partner', 
+        'Service Partner', 'PG COUNT', 'PV COUNT', 'ACTION'
+    ];
+    
+    // Dynamic hour headers based on the number of hours in the data
+    const hourHeaders = [];
+    for (let i = 1; i <= hours.length; i++) {
+        hourHeaders.push(`Hour ${i}`, `PG${i}`, `PGS${i}`, `PV${i}`, `PVS${i}`);
+    }
+
+    // Combine headers
+    const headers = metadataHeaders.concat(hourHeaders);
+
+    // Create rows for metadata and data
+    const wsData = [];
+    wsData.push(headers);  // Add headers to the worksheet
+
+    // Metadata row
+    const metadataRow = [
+        info.app_serviceid,
+        info.billername,
+        info.servicename,
+        info.ad_partner,
+        info.service_partner,
+        info.pg_count || 0,
+        info.pv_count || 0,
+        'ACTION' // Placeholder for the ACTION column
+    ];
+
+    // Add hour data to the metadata row
+    hours.forEach((hour, index) => {
+        metadataRow.push(`Hour ${index + 1}`);  // Hour label
+        metadataRow.push(hour.pg || 0);         // PG value
+        metadataRow.push(hour.pgs || 0);        // PGS value
+        metadataRow.push(hour.pv || 0);         // PV value
+        metadataRow.push(hour.pvs || 0);        // PVS value
+    });
+
+    wsData.push(metadataRow);
+
+    // Convert data array to a worksheet
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Set column widths for better readability
+    ws['!cols'] = headers.map(header => ({ wch: 15 }));  // Adjust width for all columns
+
+    // Append worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, `Data for ${info.app_serviceid}`);
+
+    // Write the workbook to a file
+    XLSX.writeFile(wb, `${info.app_serviceid}_data.xlsx`);
+};
 
   return (
     <>
-    <div className="custom-search-col">
-      <div className="control">
-        <div className="filter-controls">
+      <div className="custom-search-col">
+        <div className="control">
+          <div className="filter-controls">
+          </div>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+          <div className='stats-data'>
+            <div className='stats-data-item'>
+              <h3>All IDs</h3>
+              <p className='green'>{totalService}</p>
+            </div>
+            <div className='stats-data-item'>
+              <h3>Active IDs</h3>
+              <p className='green'>{countActiveServices()}</p>
+            </div>
+            <div className='stats-data-item'>
+              <h3>No Traffic</h3>
+              <p className='red'>{countNoTrafficServices() | 0}</p>
+            </div>
+          </div>
         </div>
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="search-input"
-        />
-        <div className='stats-data'>
-          <div className='stats-data-item'>
-            <h3>All IDs</h3>
-            <p className='green'>{totalService}</p>
-          </div>
-          <div className='stats-data-item'>
-            <h3>Active IDs</h3>
-            <p className='green'>{countActiveServices()}</p>
-          </div>
-          <div className='stats-data-item'>
-            <h3>No Traffic</h3>
-            <p className='red'>{countNoTrafficServices() | 0}</p>
-          </div>
-        </div>
-
-      </div>
-      <div className="table-container">
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              {/* add button for graph */}
-              <th className="sticky_head-horizontal-1" rowSpan="2">
-                <MultiSelectDropdown
-                  id="territory-filter"
-                  title="Territory"
-                  options={uniqueTerritory}
-                  selectedValue={territoryFilter}
-                  setSelectedValue={setTerritoryFilter}
-                  handleSort={() => handleSort(uniqueTerritory, setTerritoryFilter)}
-                />
-              </th>
-              <th className="sticky_head" rowSpan="2">
-                <MultiSelectDropdown
-                  id="operator-filter"
-                  title="Operator"
-                  options={uniqueOperator}
-                  selectedValue={operatorFilter}
-                  setSelectedValue={setOperatorFilter}
-                />
-              </th>
-              <th className="sticky_head-horizontal-2" rowSpan="2">
-                App_serviceid
-                <button
-                  onClick={() => handleSort('numSort', 'id', 'asc')}
-                  className={`sort-button ${numSort.key === 'id' && numSort.direction === 'asc' ? 'active' : ''}`}
-                  aria-label="Sort ascending"
-                >
-                  <i className="fas fa-arrow-up"></i>
-                </button>
-                <button
-                  onClick={() => handleSort('numSort', 'id', 'desc')}
-                  className={`sort-button ${numSort.key === 'id' && numSort.direction === 'desc' ? 'active' : ''}`}
-                  aria-label="Sort descending"
-                >
-                  <i className="fas fa-arrow-down"></i>
-                </button>
-              </th>
-
-              <th className="sticky_head-horizontal-3" rowSpan="2">
-                <MultiSelectDropdown
-
-                  id="biller-name-filter"
-                  title="Biller Name"
-                  options={uniqueBillerName}
-                  selectedValue={billerNameFilter}
-                  setSelectedValue={setBillerNameFilter}
-                />
-
-              </th>
-              <th className="sticky_head" rowSpan="2">
-                <MultiSelectDropdown
-                  id="service-name-filter"
-                  title="Service Name"
-                  options={uniqueServiceName}
-                  selectedValue={serviceNameFilter}
-                  setSelectedValue={setserviceNameFilter}
-                />
-              </th>
-              <th className="sticky_head" rowSpan="2">
-                <MultiSelectDropdown
-                  id="ad-partner-filter"
-                  title="Ad Partner"
-                  options={uniqueAdPartners}
-                  selectedValue={adPartnerFilter}
-                  setSelectedValue={setAdPartnerFilter}
-                />
-              </th>
-              <th className="sticky_head" rowSpan="2">
-
-                <MultiSelectDropdown
-
-                  id="service-partner-filter"
-                  title="Service Partner"
-                  options={uniqueServicePartner}
-                  selectedValue={servicePartnerFilter}
-                  setSelectedValue={setServicePartnerFilter}
-                />
-              </th>
-              <th
-                className="sticky_head-horizontal-4"
-                rowSpan="2"
-              >
-                Pg Count
-                <button
-                  onClick={() => handleSort('numSort', 'pgCount', 'asc')}
-                  className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
-                  aria-label="Sort ascending"
-                >
-                  <i className="fas fa-arrow-up"></i>
-                </button>
-                <button
-                  onClick={() => handleSort('numSort', 'pgCount', 'desc')}
-                  className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
-                  aria-label="Sort descending"
-                >
-                  <i className="fas fa-arrow-down"></i>
-                </button>
-              </th>
-              <th
-                className="sticky_head-horizontal-5"
-                rowSpan="2"
-              >
-                Pv Count
-                <button
-                  onClick={() => handleSort('numSort', 'pvCount', 'asc')}
-                  className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
-                  aria-label="Sort ascending"
-                >
-                  <i className="fas fa-arrow-up"></i>
-                </button>
-                <button
-                  onClick={() => handleSort('numSort', 'pvCount', 'desc')}
-                  className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
-                  aria-label="Sort descending"
-                >
-                  <i className="fas fa-arrow-down"></i>
-                </button>
-              </th>
-              <th className='sticky_head_horizontal-6' rowSpan={2}>
-                Action
-              </th>
-              {hours.map((hour, index) => (
-                <th className="sticky_head" key={index} colSpan="2">
-                  {hour >= 0 && hour < 12
-                    ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
-                    : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
-                </th>
-              ))}
-            </tr>
-            <tr className="hrs">
-              {hours.map((hour, index) => (
-                <React.Fragment key={index}>
-                  <th>
-                    <span className="pg">PG</span>
-                    <span className="pgs">PGS</span>
-                    <div className="sort-buttons">
-                      <button
-                        onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
-                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
-                      >
-                        <i className="fas fa-arrow-up"></i>
-                      </button>
-                      <button
-                        onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
-                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
-                      >
-                        <i className="fas fa-arrow-down"></i>
-                      </button>
-                    </div>
-                  </th>
-                  <th>
-                    <span className="pg">PV</span>
-                    <span className="pgs">PVS</span>
-                    <div className="sort-buttons">
-                      <button
-                        onClick={() => handleSort('sortConfig', 'pv', 'asc', hour)}
-                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
-                      >
-                        <i className="fas fa-arrow-up"></i>
-                      </button>
-                      <button
-                        onClick={() => handleSort('sortConfig', 'pv', 'desc', hour)}
-                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
-                      >
-                        <i className="fas fa-arrow-down"></i>
-                      </button>
-                    </div>
-                  </th>
-                </React.Fragment>
-              ))}
-            </tr>
-
-          </thead>
-          <tbody> 
-            {filteredServiceIds.length > 0 ? (
-              filteredServiceIds.map(serviceId => {
-                const { info, hours: serviceHours } = data[serviceId] || {};
-
-                return (
-                  <tr key={serviceId}>
-                    <td className="sticky-1">{info?.territory || '-'}</td>
-                    <td>{info?.operator || '-'}</td>
-                    <td className="service-id-cell" onClick={handleModalToggle}>
-                      {serviceId}
-                    </td>
-
-                    <td className="sticky-3">{info?.billername || '-'}</td>
-                    <td>{info?.servicename || '-'}</td>
-                    <td>{info?.partner || '-'}</td>
-                    <td>{info?.service_partner || '-'}</td>
-                    <td className="sticky-4">
-                      {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
-                    </td>
-                    <td className="sticky-5">
-                      {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
-                    </td>
-
-                    <td className='sticky-6'>
-                      <div className='dropdown'>
-                        <button className='dropbtn'><i class="fa fa-tasks"></i></button>
-                        <div className='dropdown-content'>
-
-                    <div className='model' onClick={handleModalToggle}>
-                        <i class="fa-solid fa-chart-line" ></i>
-                        Graph
-                    </div>
-                       
-                          <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
-                          <i class="fa-solid fa-file-circle-plus"></i>  Logs
-                      </Link>
-
-                      <a href=''>
-                        <i class="fa-solid fa-download"></i>
-                        Export
-                      </a>
-                        </div>
-
-                      </div>
-                    </td>
-                    {hours.map((hour, index) => {
-                      const hourData = serviceHours[hour] || {};
-                      return (
-                        <React.Fragment key={index}>
-                          <td
-                            className={`text-center ${getColorClass(
-                              hourData.pingenCountSuccess,
-                              hourData.pingenCount
-                            )}`}
-                          >
-                            <span className="pg">{hourData.pingenCount}</span>
-                            <span className="pgs">{hourData.pingenCountSuccess}</span>
-                          </td>
-                          <td
-                            className={`text-center ${getColorClass(
-                              hourData.pinverCountSuccess,
-                              hourData.pinverCount
-                            )}`}
-                          >
-                            <span className="pg">{hourData.pinverCount}</span>
-                            <span className="pgs">{hourData.pinverCountSuccess}</span>
-                          </td>
-                        </React.Fragment>
-                      );
-                    })}
-                  </tr>
-                );
-              })
-            ) : (
+        <div className="table-container">
+          <table className="table table-bordered">
+            <thead>
               <tr>
-                <td colSpan={30} className="text-center">
-                  No data found
-                </td>
+                {/* add button for graph */}
+                <th className="sticky_head-horizontal-1" rowSpan="2">
+                  <MultiSelectDropdown
+                    id="territory-filter"
+                    title="Territory"
+                    options={uniqueTerritory}
+                    selectedValue={territoryFilter}
+                    setSelectedValue={setTerritoryFilter}
+                    handleSort={() => handleSort(uniqueTerritory, setTerritoryFilter)}
+                  />
+                </th>
+                <th className="sticky_head" rowSpan="2">
+                  <MultiSelectDropdown
+                    id="operator-filter"
+                    title="Operator"
+                    options={uniqueOperator}
+                    selectedValue={operatorFilter}
+                    setSelectedValue={setOperatorFilter}
+                  />
+                </th>
+                <th className="sticky_head-horizontal-2" rowSpan="2">
+                  App_serviceid
+                  <button
+                    onClick={() => handleSort('numSort', 'id', 'asc')}
+                    className={`sort-button ${numSort.key === 'id' && numSort.direction === 'asc' ? 'active' : ''}`}
+                    aria-label="Sort ascending"
+                  >
+                    <i className="fas fa-arrow-up"></i>
+                  </button>
+                  <button
+                    onClick={() => handleSort('numSort', 'id', 'desc')}
+                    className={`sort-button ${numSort.key === 'id' && numSort.direction === 'desc' ? 'active' : ''}`}
+                    aria-label="Sort descending"
+                  >
+                    <i className="fas fa-arrow-down"></i>
+                  </button>
+                </th>
+
+                <th className="sticky_head-horizontal-3" rowSpan="2">
+                  <MultiSelectDropdown
+
+                    id="biller-name-filter"
+                    title="Biller Name"
+                    options={uniqueBillerName}
+                    selectedValue={billerNameFilter}
+                    setSelectedValue={setBillerNameFilter}
+                  />
+
+                </th>
+                <th className="sticky_head" rowSpan="2">
+                  <MultiSelectDropdown
+                    id="service-name-filter"
+                    title="Service Name"
+                    options={uniqueServiceName}
+                    selectedValue={serviceNameFilter}
+                    setSelectedValue={setserviceNameFilter}
+                  />
+                </th>
+                <th className="sticky_head" rowSpan="2">
+                  <MultiSelectDropdown
+                    id="ad-partner-filter"
+                    title="Ad Partner"
+                    options={uniqueAdPartners}
+                    selectedValue={adPartnerFilter}
+                    setSelectedValue={setAdPartnerFilter}
+                  />
+                </th>
+                <th className="sticky_head" rowSpan="2">
+
+                  <MultiSelectDropdown
+
+                    id="service-partner-filter"
+                    title="Service Partner"
+                    options={uniqueServicePartner}
+                    selectedValue={servicePartnerFilter}
+                    setSelectedValue={setServicePartnerFilter}
+                  />
+                </th>
+                <th
+                  className="sticky_head-horizontal-4"
+                  rowSpan="2"
+                >
+                  Pg Count
+                  <button
+                    onClick={() => handleSort('numSort', 'pgCount', 'asc')}
+                    className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
+                    aria-label="Sort ascending"
+                  >
+                    <i className="fas fa-arrow-up"></i>
+                  </button>
+                  <button
+                    onClick={() => handleSort('numSort', 'pgCount', 'desc')}
+                    className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
+                    aria-label="Sort descending"
+                  >
+                    <i className="fas fa-arrow-down"></i>
+                  </button>
+                </th>
+                <th
+                  className="sticky_head-horizontal-5"
+                  rowSpan="2"
+                >
+                  Pv Count
+                  <button
+                    onClick={() => handleSort('numSort', 'pvCount', 'asc')}
+                    className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
+                    aria-label="Sort ascending"
+                  >
+                    <i className="fas fa-arrow-up"></i>
+                  </button>
+                  <button
+                    onClick={() => handleSort('numSort', 'pvCount', 'desc')}
+                    className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
+                    aria-label="Sort descending"
+                  >
+                    <i className="fas fa-arrow-down"></i>
+                  </button>
+                </th>
+                <th className='sticky_head_horizontal-6' rowSpan={2}>
+                  Action
+                </th>
+                {hours.map((hour, index) => (
+                  <th className="sticky_head" key={index} colSpan="2">
+                    {hour >= 0 && hour < 12
+                      ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
+                      : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
+                  </th>
+                ))}
               </tr>
-            )}
-          </tbody>
-        </table>
-       
+              <tr className="hrs">
+                {hours.map((hour, index) => (
+                  <React.Fragment key={index}>
+                    <th>
+                      <span className="pg">PG</span>
+                      <span className="pgs">PGS</span>
+                      <div className="sort-buttons">
+                        <button
+                          onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
+                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
+                        >
+                          <i className="fas fa-arrow-up"></i>
+                        </button>
+                        <button
+                          onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
+                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
+                        >
+                          <i className="fas fa-arrow-down"></i>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <span className="pg">PV</span>
+                      <span className="pgs">PVS</span>
+                      <div className="sort-buttons">
+                        <button
+                          onClick={() => handleSort('sortConfig', 'pv', 'asc', hour)}
+                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
+                        >
+                          <i className="fas fa-arrow-up"></i>
+                        </button>
+                        <button
+                          onClick={() => handleSort('sortConfig', 'pv', 'desc', hour)}
+                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
+                        >
+                          <i className="fas fa-arrow-down"></i>
+                        </button>
+                      </div>
+                    </th>
+                  </React.Fragment>
+                ))}
+              </tr>
+
+            </thead>
+            <tbody>
+              {filteredServiceIds.length > 0 ? (
+                filteredServiceIds.map(serviceId => {
+                  const { info, hours: serviceHours } = data[serviceId] || {};
+                  return (
+                    <tr key={serviceId}>
+                      <td className="sticky-1">{info?.territory || '-'}</td>
+                      <td>{info?.operator || '-'}</td>
+                      <td className="service-id-cell">
+                        {serviceId}
+                      </td>
+                      <td className="sticky-3">{info?.billername || '-'}</td>
+                      <td>{info?.servicename || '-'}</td>
+                      <td>{info?.partner || '-'}</td>
+                      <td>{info?.service_partner || '-'}</td>
+                      <td className="sticky-4">
+                        {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
+                      </td>
+                      <td className="sticky-5">
+                        {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
+                      </td>
+                      <td className='sticky-6'>
+                        <div className='dropdown'>
+                          <button className='dropbtn'><i class="fa fa-tasks"></i></button>
+                          <div className='dropdown-content'>
+                            <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
+                              <i className="fa-solid fa-chart-line"></i>
+                              Graph
+                            </a>
+                            <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
+                              <i class="fa-solid fa-file-circle-plus"></i>  Logs
+                            </Link>
+                            <button onClick={() => downloadExcel(serviceId)}> <i class="fa-solid fa-download"></i>
+                              Export</button>
+                          </div>
+                        </div>
+                      </td>
+                      {hours.map((hour, index) => {
+                        const hourData = serviceHours[hour] || {};
+                        return (
+                          <React.Fragment key={index}>
+                            <td
+                              className={`text-center ${getColorClass(
+                                hourData.pingenCountSuccess,
+                                hourData.pingenCount
+                              )}`}
+                            >
+                              <span className="pg">{hourData.pingenCount}</span>
+                              <span className="pgs">{hourData.pingenCountSuccess}</span>
+                            </td>
+                            <td
+                              className={`text-center ${getColorClass(
+                                hourData.pinverCountSuccess,
+                                hourData.pinverCount
+                              )}`}
+                            >
+                              <span className="pg">{hourData.pinverCount}</span>
+                              <span className="pgs">{hourData.pinverCountSuccess}</span>
+                            </td>
+                          </React.Fragment>
+                        );
+                      })}
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={30} className="text-center">
+                    <Loading/>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+        </div>
+
       </div>
-    
-    </div>
-  <Modal
-  isOpen={isModalOpen}
-  onClose={handleModalToggle}
-  content={<GraphData Id= {serviceId} />}
-/>
-</>
+
+
+    </>
 
   );
 };

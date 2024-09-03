@@ -164,24 +164,12 @@ const InactiveData = () => {
     return filterServiceProviders(filteredByQuery, servicePartnerFilter);
   }, [searchQuery, sortedServiceIds, data, servicePartnerFilter, filterServiceProviders]);
 
- 
 
   return (
     <div className='table-container'>
       <div className="custom-search-col">
         <div className="control">
           <div className="filter-controls">
-            <select
-              id="service-partner-filter"
-              value={servicePartnerFilter}
-              onChange={e => setServicePartnerFilter(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="Globocom">Globocom</option>
-              <option value="Tiara">Tiara</option>
-              <option value="Novustech">Novustech</option>
-              <option value="Reseller">Reseller</option>
-            </select>
           </div>
           <input
             className="search"
