@@ -57,29 +57,23 @@ const Header = () => {
         }
 
         if (!hasRecentData) {
-          const notificationId = `${serviceId}-${currentTime}`;
-          const existingNotification = notifications.find(notification => notification.id === notificationId);
-          if (!existingNotification) {
             newNotifications.push({
-              id: notificationId,
-              message: `No data has been received for service ID ${serviceId} in the last 2 hours.`,
+              message: `Hey there! Service ID ${serviceId} has no recent data.`,
               timestamp: new Date().toLocaleString(),
+
             });
-          }
+        
         }
       });
-
       if (newNotifications.length > 0) {
         const updatedNotifications = [...notifications, ...newNotifications];
         setNotifications(updatedNotifications);
         localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
       }
-
       localStorage.setItem('lastCheckTime', currentTime.toString());
     };
-
     checkAlerts();
-    const intervalId = setInterval(checkAlerts, 45 * 60 * 1000); // Check every 45 minutes
+    const intervalId = setInterval(checkAlerts, 0 * 60 * 1000); // Check every 45 minutes
 
     return () => clearInterval(intervalId);
   }, [loading, data, notifications]);
@@ -135,7 +129,7 @@ const Header = () => {
           ) : (
             notifications.map((notification, index) => (
               <div key={index} className="notification-item">
-                <div className="notification-id">{notification.id}</div>
+        
                 <div className="notification-message">{notification.message}</div>
                 <div className="notification-timestamp">{notification.timestamp}</div>
               </div>

@@ -190,12 +190,18 @@ const InactiveData = () => {
             <th className="sticky_head-horizontal-3" rowSpan="2">Biller</th>
             <th className="sticky_head" rowSpan="2">Servicename</th>
             <th className="sticky_head" rowSpan="2">Partner</th>
-            <th className="sticky_head" rowSpan="2">Service_partner</th>
+            <th className="sticky_head-horizontal-4" rowSpan="2">Service_partner</th>
+            <th className='sticky_head_horizontal-6' rowSpan={2}>
+                  Action
+                </th>
             {hours.map((hour, index) => (
               <th className='sticky_head' key={index} colSpan="2">
                 {hour >= 0 && hour < 12 ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM` : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
               </th>
+              
             ))}
+            
+
           </tr>
           <tr className='hrs'>
             {hours.map((hour, index) => (
@@ -223,14 +229,20 @@ const InactiveData = () => {
                   <td>{info?.operator || '-'}</td>
                   <td className="service-id-cell">
                     {serviceId}
-                    <Link to={`/graph/${serviceId}`} className="hover-button">
-        <i className="fas fa-chart-line"></i> {/* Font Awesome icon */}
-      </Link>
+                   
                   </td>
                   <td className='sticky-3'>{info?.billername || '-'}</td>
                   <td>{info?.servicename || '-'}</td>
                   <td>{info?.partner || '-'}</td>
-                  <td>{info?.service_partner || '-'}</td>
+                  <td className='sticky-4'>{info?.service_partner || '-'}</td>
+        
+                      <td className='sticky-7'>
+                            <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
+                              <i className="fa-solid fa-chart-line"></i>
+                           
+                            </a>
+                            </td>
+                        
                   {hours.map((hour, index) => {
                     const hourData = serviceHours[hour] || {};
                     return (

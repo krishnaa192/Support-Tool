@@ -95,7 +95,9 @@ font-style: normal;
   z-index: 3;
   text-transform: uppercase;
 }
-
+.sticky-7 a{
+  background-color: white;
+}
 /* Styling for sticky columns */
 .sticky-col {
   position: sticky;
@@ -550,20 +552,20 @@ td {
 }
 .sticky-4{
   position: sticky;
-  left: 227px;
+  left: 230px;
   background-color:#23272a;
   z-index: 10;
 }
 .sticky-5{
   position: sticky;
-  left: 294px;
+  left: 306px;
   background-color:#23272a;
   z-index: 10;
 }
 
 th.sticky_head-horizontal-4{
   position: sticky;
-  left: 227px;
+  left: 230px;
   background-color:#23272a;
   z-index: 10000 !important;}
 
@@ -571,7 +573,7 @@ th.sticky_head-horizontal-4{
 
 th.sticky_head-horizontal-5{
   position: sticky;
-  left: 294px;
+  left: 306px;
   background-color:#23272a;
   z-index: 10000 !important;
 
@@ -579,13 +581,13 @@ th.sticky_head-horizontal-5{
 
 .service-id-cell{
   position: sticky;
-  left: 46px;
+  left: 75px;
   background-color: #23272a;
   z-index: 10;
 }
  th.sticky_head-horizontal-2{
   position: sticky;
-  left: 46px;
+  left: 75px;
   background-color:#23272a;
   z-index: 10000 !important;
 }
@@ -895,6 +897,7 @@ th.pv-col, td.pv-col {
 .table th {
   background-color: #7289da;
   color: white;
+  font-weight: 400 !important;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -1055,8 +1058,8 @@ i{
 .dropdown-content a {
   color: black !important;
   padding: 10px;
-  padding-bottom: 8px;
-  font-size: 16px;
+ 
+  font-size: 13px;
   text-decoration: none;
   display: block;
   border-radius: 4px;
@@ -1088,9 +1091,12 @@ i{
   
 }
 .dropdown button{
-  background-color: #f8f9fa;
+
   color: black;
   border: none;
   cursor: pointer;
   border-radius: 4px;
+}
+button{
+  font-family: "Moderustic", sans-serif !important;
 }
