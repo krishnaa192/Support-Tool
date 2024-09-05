@@ -318,14 +318,11 @@ const DataList = () => {
     for (let i = 1; i <= hours.length; i++) {
         hourHeaders.push(`Hour ${i}`, `PG${i}`, `PGS${i}`, `PV${i}`, `PVS${i}`);
     }
-
     // Combine headers
     const headers = metadataHeaders.concat(hourHeaders);
-
     // Create rows for metadata and data
     const wsData = [];
     wsData.push(headers);  // Add headers to the worksheet
-
     // Metadata row
     const metadataRow = [
         info.app_serviceid,
@@ -634,7 +631,7 @@ const DataList = () => {
               ) : (
                 <tr>
                   <td colSpan={30} className="text-center">
-                    <Loading/>
+                    No data found
                   </td>
                 </tr>
               )}

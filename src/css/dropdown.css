@@ -1,9 +1,24 @@
+.moderustic-body {
+  font-family: "Moderustic", sans-serif !important;
+  font-optical-sizing: auto !important;
+  font-weight:bold !important;
+  font-style: normal !important;
+}
+
 .multi-select-dropdown {
     position: relative;
     background-color: #ffffff !important;
+    font-family: "Moderustic", sans-serif !important;
+    font-optical-sizing: auto !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
   }
   
   .dropdown-toggle {
+    font-family: "Moderustic", sans-serif !important;
+    font-optical-sizing: auto !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
     background-color: #f8f9fa !important;
     border: none;
     padding: 5px;

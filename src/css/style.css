@@ -897,6 +897,7 @@ th.pv-col, td.pv-col {
 .table th {
   background-color: #7289da;
   color: white;
+  font-weight: 400 !important;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -1095,4 +1096,7 @@ i{
   border: none;
   cursor: pointer;
   border-radius: 4px;
+}
+button{
+  font-family: "Moderustic", sans-serif !important;
 }
