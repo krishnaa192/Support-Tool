@@ -590,16 +590,16 @@ const DataList = () => {
                       </td>
                       <td className='sticky-6'>
                         <div className='dropdown'>
-                          <button className='dropbtn'><i class="fa fa-tasks"></i></button>
+                          <button className='dropbtn'><i className="fa fa-tasks"></i></button>
                           <div className='dropdown-content'>
                             <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
                               <i className="fa-solid fa-chart-line"></i>
                               Graph
                             </a>
                             <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
-                              <i class="fa-solid fa-file-circle-plus"></i>  Logs
+                              <i className="fa-solid fa-file-circle-plus"></i>  Logs
                             </Link>
-                            <button onClick={() => downloadExcel(serviceId)}> <i class="fa-solid fa-download"></i>
+                            <button onClick={() => downloadExcel(serviceId)}> <i className="fa-solid fa-download"></i>
                               Export</button>
                           </div>
                         </div>

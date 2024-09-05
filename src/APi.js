@@ -1,15 +1,15 @@
 import axios from 'axios';
-
 let dataPromise = null;
 let lastFetchTime = 0;
 const CACHE_DURATION = 8 * 60 * 1000; // Cache duration (e.g., 5 minutes)
 
 const ApiRequest = async () => {
     const now = Date.now();
+    const api_url=process.env.REACT_APP_API_URL;
 
     // Check if cached data is still valid
     if (!dataPromise || (now - lastFetchTime > CACHE_DURATION)) {
-        dataPromise = axios.get('https://wap.matrixads.in/mglobopay/getSupportMonitorData', {
+        dataPromise = axios.get(api_url, {
             headers: { 'Content-Type': 'application/json' },
         })
         .then(response => {
