@@ -565,7 +565,6 @@ const DataList = () => {
                   </React.Fragment>
                 ))}
               </tr>
-
             </thead>
             <tbody>
               {filteredServiceIds.length > 0 ? (
