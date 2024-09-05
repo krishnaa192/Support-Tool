@@ -4,6 +4,7 @@ import ApiRequest from './APi'; // Ensure the correct import path for ApiRequest
 export const fetchDataAndCount = async () => {
     try {
         const response = await ApiRequest();
+         console.log("API Response:", response);
         const data = response.data || [];
 
         return {
