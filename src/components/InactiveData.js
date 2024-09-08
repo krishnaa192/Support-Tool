@@ -90,24 +90,20 @@ const InactiveData = () => {
     return serviceProviders.filter(serviceProvider => {
       const partner = data[serviceProvider]?.info?.service_partner?.toLowerCase();
       if (!partner) return false;
-
       const filterLower = filter.toLowerCase();
       if (filterLower === 'reseller') return !['globocom', 'tiara', 'novustech'].includes(partner);
-
       return partner === filterLower;
     });
   }, [data]);
 
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
+    if(totalCount === 0 && successCount === 0) return 'grey';
     if (ratio < 0.25) return 'red';
     if (ratio >= 0.4 && ratio <= 0.6) return 'orange';
     if (ratio > 0.6 && ratio <= 0.8) return 'light-green';
     return 'dark-green';
   };
-
-
-
 
   const requestSort = (hour, key) => {
     setSortConfig(prevConfig => ({
@@ -123,7 +119,6 @@ const InactiveData = () => {
       if (!service) return 0;
       const hourData = service.hours[hour];
       if (!hourData) return 0;
-  
       return type === 'pg'
         ? (hourData.pingenCount === 0 ? 0 : hourData.pingenCountSuccess / hourData.pingenCount)
         : (hourData.pinverCount === 0 ? 0 : hourData.pinverCountSuccess / hourData.pinverCount);
@@ -131,7 +126,6 @@ const InactiveData = () => {
   
     const sortByRatio = (id, hour, type) => calculateRatio(id, hour, type);
     if (!sortConfig.key || !data) return inactiveServices.map(service => service.serviceId);
-
     return inactiveServices.map(service => service.serviceId).sort((a, b) => {
       const ratioA = sortByRatio(a, sortConfig.hour, sortConfig.key);
       const ratioB = sortByRatio(b, sortConfig.hour, sortConfig.key);
@@ -253,10 +247,12 @@ const InactiveData = () => {
                             hourData.pingenCount
                           )}`}
                         >
-                          <span className="pg">{hourData.pingenCount}</span>
-                          <span className="pgs">
-                            {hourData.pingenCountSuccess}
-                          </span>
+                        <div className={`pg ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pingenCount}
+                              </div>
+                              <div className={`pgs ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? '-' : hourData.pingenCountSuccess}
+                              </div>
                         </td>
                         <td
                           className={`text-center ${getColorClass(
@@ -264,10 +260,13 @@ const InactiveData = () => {
                             hourData.pinverCount
                           )}`}
                         >
-                          <span className="pg">{hourData.pinverCount}</span>
-                          <span className="pgs">
-                            {hourData.pinverCountSuccess}
-                          </span>
+                          <div className={`pg ${hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pinverCount}
+                              </div>
+                              <div className={`pgs ${hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? '-' : hourData.pinverCountSuccess}
+                              </div>
+
                         </td>
                       </React.Fragment>
                     );

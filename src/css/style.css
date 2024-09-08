@@ -566,6 +566,7 @@ td {
 th.sticky_head-horizontal-4{
   position: sticky;
   left: 230px;
+
   background-color:#23272a;
   z-index: 10000 !important;}
 
@@ -1099,4 +1100,22 @@ i{
 }
 button{
   font-family: "Moderustic", sans-serif !important;
+}
+.blank{
+  font-weight: bolder;
+}
+.grey{
+  background-color:grey ;
+}
+.download button{
+  
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 18px 15px ;
+  margin: 0px 2px;
+}
+.download button:hover{
+  background-color: #c3cdd7;
 }

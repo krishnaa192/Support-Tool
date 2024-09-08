@@ -1,11 +1,11 @@
 import axios from 'axios';
 let dataPromise = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 8 * 60 * 1000; // Cache duration (e.g., 5 minutes)
+const CACHE_DURATION = 15 * 60 * 1000; // Cache duration (e.g., 15 minutes)
 
 const ApiRequest = async () => {
     const now = Date.now();
-    const api_url=process.env.REACT_APP_API_URL;
+    const api_url='https://wap.matrixads.in/mglobopay/getSupportMonitorData'
 
     // Check if cached data is still valid
     if (!dataPromise || (now - lastFetchTime > CACHE_DURATION)) {

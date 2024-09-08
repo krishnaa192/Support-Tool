@@ -56,7 +56,7 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
 
   const handleApply = () => {
     // Apply the temporary selected options when the Apply button is clicked
-    setSelectedValue(tempSelectedOptions.join(','));
+    setSelectedValue(tempSelectedOptions.join(','))
     setIsApplied(true); // Mark as applied
   };
 
@@ -68,6 +68,12 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
+    //when all query result is chooseed it chose all option
+    if (event.target.value === '') {
+      setTempSelectedOptions(sortedOptions);
+    }
+    
+    
   };
 
   const isSelected = (value) => tempSelectedOptions.includes(value);

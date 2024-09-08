@@ -14,6 +14,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.4",
+    "billex": "file:",
     "d3": "^7.9.0",
     "dotenv": "^16.4.5",
     "prop-types": "^15.8.1",
@@ -27,6 +28,7 @@
     "react-scripts": "5.0.1",
     "react-table": "^7.8.0",
     "react-toastify": "^10.0.5",
+    "react-window": "^1.8.10",
     "three": "^0.167.1",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"

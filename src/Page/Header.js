@@ -3,7 +3,7 @@ import DataList from '../components/DataList';
 import InactiveData from '../components/InactiveData';
 import '../css/style.css';
 import '../css/header.css';
-import {  processDataByServiceId } from '../utils';
+import { processDataByServiceId } from '../utils';
 import ApiRequest from '../APi';
 
 const Header = () => {
@@ -34,58 +34,85 @@ const Header = () => {
     if (loading) return;
 
     const processData = processDataByServiceId(data);
-  
 
     const checkAlerts = () => {
       const currentTime = new Date().getTime();
       let lastCheckTime = localStorage.getItem('lastCheckTime');
-      
-      // Initialize lastCheckTime if not set
+
       if (!lastCheckTime) {
         lastCheckTime = currentTime.toString();
         localStorage.setItem('lastCheckTime', lastCheckTime);
       }
-      
-      console.log('Last check time:', lastCheckTime); // Log to verify if it's being retrieved
-    
+
       const interval = 45 * 60 * 1000; // 45 minutes
-    
       if (currentTime - parseInt(lastCheckTime, 10) < interval) {
         console.log('Skipping check. Last checked recently');
         return;
       }
-    
-      // Proceed with your alert checking logic
+
       let newNotifications = {};
-    
-      // Your existing logic for processing and checking data
-    
+
+      // Iterate over processed data to check for alert conditions
+      Object.keys(processData).forEach((serviceId) => {
+        const serviceData = processData[serviceId];
+
+        if (!Array.isArray(serviceData)) {
+          console.error(`Service data for ${serviceId} is not an array`, serviceData);
+          return; // Skip if data is not an array
+        }
+
+        const lastTwoHours = serviceData.filter(item => {
+          const itemTime = new Date(item.timestamp).getTime();
+          return currentTime - itemTime < 2 * 60 * 60 * 1000; // last 2 hours
+        });
+
+        const pingenCountSum = lastTwoHours.reduce((sum, item) => sum + item.pingenCount, 0);
+        const pinverCountSum = lastTwoHours.reduce((sum, item) => sum + item.pinverCount, 0);
+
+        if (pingenCountSum === 0 && pinverCountSum === 0) {
+          newNotifications[serviceId] = {
+            message: `No activity for service ${serviceId} in the last 2 hours.`,
+            timestamp: new Date().toISOString(),
+          };
+          console.log(`Generated notification: No activity for ${serviceId}`);
+        }
+
+        lastTwoHours.forEach(item => {
+          if ((item.pingenCount === 30 && item.pingenCountSuccess === 0) || 
+              (item.pinverCount === 30 && item.pinverCountSuccess === 0)) {
+            newNotifications[serviceId] = {
+              message: `Alert for service ${serviceId}: Ping/Pinver count is 30 but success is 0.`,
+              timestamp: new Date().toISOString(),
+            };
+            console.log(`Generated alert: Ping/Pinver issue for ${serviceId}`);
+          }
+        });
+      });
+
       if (Object.keys(newNotifications).length > 0) {
         setNotifications((prevNotifications) => {
           const updatedNotifications = {
-            ...prevNotifications, // Retain existing notifications
-            ...newNotifications,  // Add or update with new ones
+            ...prevNotifications,
+            ...newNotifications,
           };
-    
+          console.log('New notifications:', updatedNotifications); // Log the new notifications
           localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
           return updatedNotifications;
         });
       }
-    
+
       localStorage.setItem('lastCheckTime', currentTime.toString());
-      console.log('Updated last check time:', currentTime); // Log the updated time
     };
-    
 
     checkAlerts();
-    const intervalId = setInterval(checkAlerts, 45 * 60 * 1000); // Check every 45 minutes
+    const intervalId = setInterval(checkAlerts, 0.5 * 60 * 1000); // Check every 30 minutes
 
     return () => clearInterval(intervalId);
   }, [loading, data]);
 
   // Remove notifications older than 6 hours
   useEffect(() => {
-    const timer = setInterval(() => {
+    const cleanupOldNotifications = () => {
       const currentTime = new Date().getTime();
       const updatedNotifications = Object.keys(notifications).reduce((result, serviceId) => {
         const notification = notifications[serviceId];
@@ -103,31 +130,31 @@ const Header = () => {
         setNotifications(updatedNotifications);
         localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
       }
-    }, 60 * 1000); // Check every minute
+    };
 
-    return () => clearInterval(timer);
+    const cleanupInterval = setInterval(cleanupOldNotifications, 5 * 60 * 1000); // Check every 5 minutes
+
+    return () => clearInterval(cleanupInterval);
   }, [notifications]);
 
   return (
     <>
       <div className="billex-main">
         <div className="table-one p-2">
-          <div>
-            <div className="p-2">
-              <div className="row">
-                <div className="tabs">
-                  <button onClick={() => setTab('all')} className={tab === 'all' ? 'active' : ''}>
-                    All Data
+          <div className="p-2">
+            <div className="row">
+              <div className="tabs">
+                {['all', 'inactive', 'notification'].map((tabName) => (
+                  <button
+                    key={tabName}
+                    onClick={() => setTab(tabName)}
+                    className={tab === tabName ? 'active' : ''}
+                  >
+                    {tabName.charAt(0).toUpperCase() + tabName.slice(1)} Data
                   </button>
-                  <button onClick={() => setTab('inactive')} className={tab === 'inactive' ? 'active' : ''}>
-                    Inactive Data
-                  </button>
-                  <button onClick={() => setTab('notification')} className={tab === 'notification' ? 'active' : ''}>
-                    Notifications
-                  </button>
-                </div>
-                <h3 className="head_black">Globocom Support Monitoring</h3>
+                ))}
               </div>
+              <h3 className="head_black">Globocom Support Monitoring</h3>
             </div>
           </div>
         </div>

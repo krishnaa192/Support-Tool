@@ -8,6 +8,7 @@ import ApiRequest from '../APi';
 import MultiSelectDropdown from './MultiSelect';
 import * as XLSX from 'xlsx';
 import Loading from './Loading';
+import { FixedSizeList as List } from 'react-window';
 
 
 
@@ -16,6 +17,7 @@ const DataList = () => {
   const [data, setData] = useState({});
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
+  const [activeServices, setActiveServices] = useState([]);
 
   const [sortType, setSortType] = useState('');
   const [sortConfig, setSortConfig] = useState({});
@@ -66,6 +68,7 @@ const DataList = () => {
             })),
           };
         }
+
         const hour = parseInt(time, 10);
         acc[app_serviceid].hours[hour] = {
           pingenCount,
@@ -75,16 +78,36 @@ const DataList = () => {
         };
         return acc;
       }, {});
+      const newactiveServices = Object.keys(processedData).filter(serviceId => {
+        const hourData0 = processedData[serviceId].hours[(new Date().getHours() - 0 + 24) % 24];
+        const hourData1 = processedData[serviceId].hours[(new Date().getHours() - 1 + 24) % 24];
+
+        return (
+          hourData0.pingenCount !== 0 && hourData0.pinverCount !== 0 &&
+          hourData1.pingenCount !== 0 && hourData1.pinverCount !== 0
+        );
+      }).map(serviceId => ({
+        serviceId,
+        ...processedData[serviceId]
+      }));
+
+      //check active 
+
+
+      //implemt the condition if pingentcount and  pingenCountSuccess is 0 then both should show -
+
+
       const currentHour = new Date().getHours();
       const hourData = Array.from({ length: currentHour + 1 }, (_, index) => (currentHour - index + 24) % 24);
 
       setData(processedData);
+      setActiveServices(newactiveServices);
       setServiceIds(Object.keys(processedData));
       setHours(hourData);
     }
     fetchData();
   }, []); // Fetch data only once
-
+  console.log("New Active Services", activeServices);
   const getPGPVCount = useCallback((id, hour, type) => {
     let pgCount = 0;
     let pvCount = 0;
@@ -154,6 +177,7 @@ const DataList = () => {
 
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
+    if(totalCount === 0 && successCount === 0) return 'grey';
     if (ratio <= 0.25) return 'red';
     if (ratio > 0.25 && ratio < 0.4) return 'orange';
     if (ratio >= 0.4 && ratio <= 0.6) return 'orange';
@@ -268,96 +292,138 @@ const DataList = () => {
   // Function to count active services
   const countActiveServices = useCallback(() => {
     const twoHoursAgo = (getCurrentHour() - 2 + 24) % 24;
+  
     return filteredServiceIds.filter(id => {
       const service = data[id];
       if (!service) return false;
-      for (let i = twoHoursAgo; i <= getCurrentHour(); i++) {
-        if (service.hours[i] && (service.hours[i].pingenCount > 0 || service.hours[i].pinverCount > 0)) {
-          return true;
+  
+      // If twoHoursAgo > currentHour, loop wraps around midnight
+      if (twoHoursAgo > getCurrentHour()) {
+        // Check from twoHoursAgo to 23
+        for (let i = twoHoursAgo; i < 24; i++) {
+          if (service.hours[i] && (service.hours[i].pingenCount > 0 || service.hours[i].pinverCount > 0)) {
+            return true;
+          }
+        }
+        // Check from 0 to current hour
+        for (let i = 0; i <= getCurrentHour(); i++) {
+          if (service.hours[i] && (service.hours[i].pingenCount > 0 || service.hours[i].pinverCount > 0)) {
+            return true;
+          }
+        }
+      } else {
+        // If no wrap, just check from twoHoursAgo to currentHour
+        for (let i = twoHoursAgo; i <= getCurrentHour(); i++) {
+          if (service.hours[i] && (service.hours[i].pingenCount > 0 || service.hours[i].pinverCount > 0)) {
+            return true;
+          }
         }
       }
+      
       return false;
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
-
+  
   // Function to count services with no traffic in the last 2 hours
   const countNoTrafficServices = useCallback(() => {
     const twoHoursAgo = (getCurrentHour() - 2 + 24) % 24;
+  
     return filteredServiceIds.filter(id => {
       const service = data[id];
       if (!service) return false;
-      for (let i = twoHoursAgo; i <= getCurrentHour(); i++) {
-        if (service.hours[i] && (service.hours[i].pingenCount > 0 || service.hours[i].pinverCount > 0)) {
-          return false;
+  
+      // Check if there is traffic in the last 2 hours
+      for (let i = 0; i < 3; i++) {  // Check current hour and the previous 2 hours
+        const hourToCheck = (getCurrentHour() - i + 24) % 24;
+        const hourData = service.hours[hourToCheck];
+        
+        if (hourData && (hourData.pingenCount > 0 || hourData.pinverCount > 0)) {
+          return false;  // If any traffic found, return false
         }
       }
+  
+      // If no traffic in the last 2 hours, count this service
       return true;
+  
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
+  
 
   const totalService = countActiveServices() + countNoTrafficServices()
 
-  // Function to download Excel file
-  const downloadExcel = (serviceId) => {
-    const service = data[serviceId];
+  const downloadExcel = () => {
+   //get all filtered data
+    const service = filteredServiceIds.reduce((acc, serviceId) => {
+      acc[serviceId] = data[serviceId];
+      return acc;
+    }, {});
     if (!service) return;
-
-    const { info, hours } = service;
-
+  
     // Create a new workbook and worksheet
     const wb = XLSX.utils.book_new();
-
+  
     // Define headers based on your example format
     const metadataHeaders = [
-        'APP_SERVICEID', 'Biller Name', 'Service Name', 'Ad Partner', 
-        'Service Partner', 'PG COUNT', 'PV COUNT', 'ACTION'
+    'Territory',  'Operator','APP_SERVICEID', 'Biller Name', 'Service Name', 'Ad Partner',
+      'Service Partner'
     ];
-    
+  
     // Dynamic hour headers based on the number of hours in the data
     const hourHeaders = [];
-    for (let i = 1; i <= hours.length; i++) {
-        hourHeaders.push(`Hour ${i}`, `PG${i}`, `PGS${i}`, `PV${i}`, `PVS${i}`);
+    for (let i = 0; i < 24; i++) {
+      const startHour = (i + new Date().getHours()) % 24;
+      const endHour = (startHour + 1) % 24;
+      const startHourFormatted = startHour === 0 ? '12 AM' : startHour < 12 ? `${startHour} AM` : startHour === 12 ? '12 PM' : `${startHour - 12} PM`;
+      const endHourFormatted = endHour === 0 ? '12 AM' : endHour < 12 ? `${endHour} AM` : endHour === 12 ? '12 PM' : `${endHour - 12} PM`;
+      hourHeaders.push(`${startHourFormatted} - ${endHourFormatted}`);
     }
     // Combine headers
     const headers = metadataHeaders.concat(hourHeaders);
+  
     // Create rows for metadata and data
     const wsData = [];
     wsData.push(headers);  // Add headers to the worksheet
-    // Metadata row
-    const metadataRow = [
-        info.app_serviceid,
+  
+    Object.keys(service).forEach(serviceId => {
+      const { info, hours } = service[serviceId];
+      
+      // Metadata row
+      const metadataRow = [
+      
+        info.territory,
+        info.operator,
+        serviceId,
         info.billername,
         info.servicename,
-        info.ad_partner,
-        info.service_partner,
-        info.pg_count || 0,
-        info.pv_count || 0,
-        'ACTION' // Placeholder for the ACTION column
-    ];
-
-    // Add hour data to the metadata row
-    hours.forEach((hour, index) => {
-        metadataRow.push(`Hour ${index + 1}`);  // Hour label
-        metadataRow.push(hour.pg || 0);         // PG value
-        metadataRow.push(hour.pgs || 0);        // PGS value
-        metadataRow.push(hour.pv || 0);         // PV value
-        metadataRow.push(hour.pvs || 0);        // PVS value
+        info.partner,
+        info.service_partner
+      ];
+  
+      // Add hour data to the metadata row
+      for (let i = 0; i < 24; i++) {
+        const hourData = hours[i] || {};
+      // pg-pgs-pv-pvs format
+        metadataRow.push(`${hourData.pingenCount}- ${hourData.pingenCountSuccess} - ${hourData.pinverCount}- ${hourData.pinverCountSuccess}`);
+      }
+  
+      wsData.push(metadataRow);
     });
-
-    wsData.push(metadataRow);
-
+  
     // Convert data array to a worksheet
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-    // Set column widths for better readability
-    ws['!cols'] = headers.map(header => ({ wch: 15 }));  // Adjust width for all columns
-
+  
+    // Set column widths for better readability set auto width
+  
+    ws['!cols'] = headers.map(header => ({ wch: 15 })); 
+  
     // Append worksheet to workbook
-    XLSX.utils.book_append_sheet(wb, ws, `Data for ${info.app_serviceid}`);
-
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+  
     // Write the workbook to a file
-    XLSX.writeFile(wb, `${info.app_serviceid}_data.xlsx`);
-};
+    XLSX.writeFile(wb, 'data.xlsx');
+  };
+  
+  
 
   return (
     <>
@@ -372,6 +438,11 @@ const DataList = () => {
             onChange={e => setSearchQuery(e.target.value)}
             className="search-input"
           />
+          <div className='download'>
+            <button onClick={downloadExcel}>
+            <i class="fas fa-download"></i>
+           </button>
+          </div>
           <div className='stats-data'>
             <div className='stats-data-item'>
               <h3>All IDs</h3>
@@ -379,7 +450,7 @@ const DataList = () => {
             </div>
             <div className='stats-data-item'>
               <h3>Active IDs</h3>
-              <p className='green'>{countActiveServices()}</p>
+              <p className='green'>{countActiveServices()|0}</p>
             </div>
             <div className='stats-data-item'>
               <h3>No Traffic</h3>
@@ -452,7 +523,7 @@ const DataList = () => {
                 <th className="sticky_head" rowSpan="2">
                   <MultiSelectDropdown
                     id="ad-partner-filter"
-                    title="Ad Partner"
+                    title=" Partner"
                     options={uniqueAdPartners}
                     selectedValue={adPartnerFilter}
                     setSelectedValue={setAdPartnerFilter}
@@ -473,7 +544,7 @@ const DataList = () => {
                   className="sticky_head-horizontal-4"
                   rowSpan="2"
                 >
-                  Pg Count
+                  Total Pg 
                   <button
                     onClick={() => handleSort('numSort', 'pgCount', 'asc')}
                     className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
@@ -493,7 +564,7 @@ const DataList = () => {
                   className="sticky_head-horizontal-5"
                   rowSpan="2"
                 >
-                  Pv Count
+                  Total Pv 
                   <button
                     onClick={() => handleSort('numSort', 'pvCount', 'asc')}
                     className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
@@ -564,7 +635,9 @@ const DataList = () => {
               </tr>
             </thead>
             <tbody>
+
               {filteredServiceIds.length > 0 ? (
+
                 filteredServiceIds.map(serviceId => {
                   const { info, hours: serviceHours } = data[serviceId] || {};
                   return (
@@ -595,8 +668,7 @@ const DataList = () => {
                             <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
                               <i className="fa-solid fa-file-circle-plus"></i>  Logs
                             </Link>
-                            <button onClick={() => downloadExcel(serviceId)}> <i className="fa-solid fa-download"></i>
-                              Export</button>
+                           
                           </div>
                         </div>
                       </td>
@@ -610,8 +682,13 @@ const DataList = () => {
                                 hourData.pingenCount
                               )}`}
                             >
-                              <span className="pg">{hourData.pingenCount}</span>
-                              <span className="pgs">{hourData.pingenCountSuccess}</span>
+                              <div className={`pg ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pingenCount}
+                              </div>
+                              <div className={`pgs ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? '-' : hourData.pingenCountSuccess}
+                              </div>
+
                             </td>
                             <td
                               className={`text-center ${getColorClass(
@@ -619,8 +696,14 @@ const DataList = () => {
                                 hourData.pinverCount
                               )}`}
                             >
-                              <span className="pg">{hourData.pinverCount}</span>
-                              <span className="pgs">{hourData.pinverCountSuccess}</span>
+                              {/* // add consition when both are 0 then show -  else  normal value*/}
+                              <div className={`pg ${hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pinverCount}
+                              </div>
+                              <div className={`pgs ${hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? '-' : hourData.pinverCountSuccess}
+                              </div>
+
                             </td>
                           </React.Fragment>
                         );
