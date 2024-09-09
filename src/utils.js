@@ -1,12 +1,11 @@
-// src/utils/dataUtils.js
 import ApiRequest from './APi'; // Ensure the correct import path for ApiRequest
 
 export const fetchDataAndCount = async () => {
     try {
         const response = await ApiRequest();
-         console.log("API Response:", response);
-        const data = response.data || [];
-
+      
+        const data = Array.isArray(response.data) ? response.data : [];
+        
         return {
             data,
             count: data.length
@@ -18,11 +17,16 @@ export const fetchDataAndCount = async () => {
             count: 0
         };
     }
-    
 };
 
 export const processDataByServiceId = (data) => {
     const processedData = {};
+
+    // Ensure data is an array before processing
+    if (!Array.isArray(data)) {
+        console.error("Expected data to be an array but received:", data);
+        return processedData;
+    }
 
     data.forEach(item => {
         const {
@@ -52,7 +56,7 @@ export const processDataByServiceId = (data) => {
                     billername: billername || '',
                     service_partner: service_partner || ''
                 },
-              //from 0 to current hour
+                // from 0 to current hour
                 hours: Array.from({ length: 24 }, (_, i) => ({
                     hour: i,
                     pingenCount: 0,
@@ -76,3 +80,11 @@ export const processDataByServiceId = (data) => {
 
     return processedData;
 };
+
+// Fetch data and process it
+fetchDataAndCount().then(({ data }) => {
+    const processedData = processDataByServiceId(data);
+ 
+}).catch(error => {
+    console.error("Error processing data:", error);
+});

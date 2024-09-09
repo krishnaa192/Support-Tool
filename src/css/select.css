@@ -1,16 +1,10 @@
-body{
-  font-family: "Moderustic", sans-serif !important;
-  
-}
+
 
 .multi-select-dropdown {
     position: relative;
     display: inline-block;
-    font-family: "Moderustic", sans-serif !important;
-    font-family: "Moderustic", sans-serif !important;
-    font-optical-sizing: auto !important;
+    font-family: "Poppins", sans-serif !important;
     font-weight:bold !important;
-
     font-style: normal !important;
   
  
@@ -49,6 +43,7 @@ body{
   .dropdown-buttons {
     display: flex;
     justify-content: space-between;
+    background-color: #fff;
     padding: 10px;
     border-top: 1px solid #ccc;
   }
@@ -68,13 +63,13 @@ body{
     cursor: pointer;
   }
   .multi-select-dropdown button{
-    background-color: #fff;
+    background-color: transparent;
     border: none !important;
     padding: 0;
     cursor: pointer;
   }
   svg{
-    background-color: white !important;
+    background-color: #fff !important;
   }
   .search-filter{
     margin-top: 20px;

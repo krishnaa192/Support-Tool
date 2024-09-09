@@ -431,18 +431,6 @@ const DataList = () => {
         <div className="control">
           <div className="filter-controls">
           </div>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          <div className='download'>
-            <button onClick={downloadExcel}>
-            <i class="fas fa-download"></i>
-           </button>
-          </div>
           <div className='stats-data'>
             <div className='stats-data-item'>
               <h3>All IDs</h3>
@@ -457,6 +445,21 @@ const DataList = () => {
               <p className='red'>{countNoTrafficServices() | 0}</p>
             </div>
           </div>
+          <div className='download'>
+            <button onClick={downloadExcel}>
+            <i className="fas fa-download"></i>
+           </button>
+          </div>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+          
+         
+         
         </div>
         <div className="table-container">
           <table className="table table-bordered">
@@ -594,24 +597,27 @@ const DataList = () => {
               <tr className="hrs">
                 {hours.map((hour, index) => (
                   <React.Fragment key={index}>
-                    <th>
-                      <span className="pg">PG</span>
-                      <span className="pgs">PGS</span>
-                      <div className="sort-buttons">
-                        <button
-                          onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
-                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
-                        >
-                          <i className="fas fa-arrow-up"></i>
-                        </button>
-                        <button
-                          onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
-                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
-                        >
-                          <i className="fas fa-arrow-down"></i>
-                        </button>
-                      </div>
-                    </th>
+                  <th>
+  <span className="pg">PG</span>
+  <span className="pgs">PGS</span>
+  <div className="sort-buttons">
+    <button
+      onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
+      className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
+      aria-label="Sort ascending"
+    >
+      <i className="fas fa-arrow-up"></i>
+    </button>
+    <button
+      onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
+      className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
+      aria-label="Sort descending"
+    >
+      <i className="fas fa-arrow-down"></i>
+    </button>
+  </div>
+</th>
+
                     <th>
                       <span className="pg">PV</span>
                       <span className="pgs">PVS</span>

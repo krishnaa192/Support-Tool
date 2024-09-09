@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import '../css/select.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faCheckSquare, faChevronDown, faSquare, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faCheckSquare, faChevronDown, faSquare, faFilter } from '@fortawesome/free-solid-svg-icons';
 
 const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setSelectedValue }) => {
   const [tempSelectedOptions, setTempSelectedOptions] = useState([]); // Temp state for selections
@@ -60,12 +60,6 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
     setIsApplied(true); // Mark as applied
   };
 
-  const handleClear = () => {
-    setTempSelectedOptions([]);
-    setSearchQuery(''); // Clear the search query when clearing selections
-    setIsApplied(false); // Reset apply status
-  };
-
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
     //when all query result is chooseed it chose all option
@@ -118,9 +112,6 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
         <div className="dropdown-buttons">
           <button onClick={() => handleCheckboxChange('all')}>
             <FontAwesomeIcon icon={isAllSelected() ? faCheckSquare : faSquare} /> All
-          </button>
-          <button onClick={handleClear}>
-            <FontAwesomeIcon icon={faTrashAlt} />
           </button>
           <button className='apply' onClick={handleApply}>
             Apply
