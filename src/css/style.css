@@ -378,26 +378,26 @@ td {
 
 .sticky-3 {
   position: sticky;
-  left: 143px;
+  left: 180px;
   background-color:#23272a;
   z-index: 10;
 }
 .sticky-4{
   position: sticky;
-  left: 230px;
+  left: 300px;
   background-color:#23272a;
   z-index: 10;
 }
 .sticky-5{
   position: sticky;
-  left: 306px;
+  left: 386px;
   background-color:#23272a;
   z-index: 10;
 }
 
 th.sticky_head-horizontal-4{
   position: sticky;
-  left: 230px;
+  left: 300px;
 
   background-color:#23272a;
   z-index: 10000 !important;}
@@ -406,7 +406,7 @@ th.sticky_head-horizontal-4{
 
 th.sticky_head-horizontal-5{
   position: sticky;
-  left: 306px;
+  left: 386px;
   background-color:#23272a;
   z-index: 10000 !important;
 
@@ -414,20 +414,20 @@ th.sticky_head-horizontal-5{
 
 .service-id-cell{
   position: sticky;
-  left: 75px;
+  left: 80px;
   background-color: #23272a;
   z-index: 10;
 }
  th.sticky_head-horizontal-2{
   position: sticky;
-  left: 75px;
+  left: 80px;
   background-color:#23272a;
   z-index: 10000 !important;
 }
 
  th.sticky_head-horizontal-3{
   position: sticky;
-  left: 143px;
+  left: 180px;
   background-color:#23272a;
   z-index: 10000! important;
 }
@@ -814,4 +814,7 @@ button{
 }
 .hrs:hover .sort-button {
   display: inline-block;
+}
+th svg{
+  background-color: transparent !important;
 }

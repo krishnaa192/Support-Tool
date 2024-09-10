@@ -102,7 +102,6 @@ const Header = () => {
       }
     });
   };
-
   // Set up interval to check alerts every 45 minutes
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -110,7 +109,7 @@ const Header = () => {
         checkAlert();
         checkAdditionalAlert(); // Check additional alerts
       }
-    }, 45 * 60 * 1000); // 45 minutes in milliseconds
+    }, .5 * 60 * 1000); // 45 minutes in milliseconds
 
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
