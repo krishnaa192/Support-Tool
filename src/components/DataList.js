@@ -177,7 +177,7 @@ const DataList = () => {
 
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
-    if(totalCount === 0 && successCount === 0) return 'grey';
+    if (totalCount === 0 && successCount === 0) return 'grey';
     if (ratio <= 0.25) return 'red';
     if (ratio > 0.25 && ratio < 0.4) return 'orange';
     if (ratio >= 0.4 && ratio <= 0.6) return 'orange';
@@ -292,11 +292,11 @@ const DataList = () => {
   // Function to count active services
   const countActiveServices = useCallback(() => {
     const twoHoursAgo = (getCurrentHour() - 2 + 24) % 24;
-  
+
     return filteredServiceIds.filter(id => {
       const service = data[id];
       if (!service) return false;
-  
+
       // If twoHoursAgo > currentHour, loop wraps around midnight
       if (twoHoursAgo > getCurrentHour()) {
         // Check from twoHoursAgo to 23
@@ -319,55 +319,55 @@ const DataList = () => {
           }
         }
       }
-      
+
       return false;
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
-  
+
   // Function to count services with no traffic in the last 2 hours
   const countNoTrafficServices = useCallback(() => {
     const twoHoursAgo = (getCurrentHour() - 2 + 24) % 24;
-  
+
     return filteredServiceIds.filter(id => {
       const service = data[id];
       if (!service) return false;
-  
+
       // Check if there is traffic in the last 2 hours
       for (let i = 0; i < 3; i++) {  // Check current hour and the previous 2 hours
         const hourToCheck = (getCurrentHour() - i + 24) % 24;
         const hourData = service.hours[hourToCheck];
-        
+
         if (hourData && (hourData.pingenCount > 0 || hourData.pinverCount > 0)) {
           return false;  // If any traffic found, return false
         }
       }
-  
+
       // If no traffic in the last 2 hours, count this service
       return true;
-  
+
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
-  
+
 
   const totalService = countActiveServices() + countNoTrafficServices()
 
   const downloadExcel = () => {
-   //get all filtered data
+    //get all filtered data
     const service = filteredServiceIds.reduce((acc, serviceId) => {
       acc[serviceId] = data[serviceId];
       return acc;
     }, {});
     if (!service) return;
-  
+
     // Create a new workbook and worksheet
     const wb = XLSX.utils.book_new();
-  
+
     // Define headers based on your example format
     const metadataHeaders = [
-    'Territory',  'Operator','APP_SERVICEID', 'Biller Name', 'Service Name', 'Ad Partner',
+      'Territory', 'Operator', 'APP_SERVICEID', 'Biller Name', 'Service Name', 'Ad Partner',
       'Service Partner'
     ];
-  
+
     // Dynamic hour headers based on the number of hours in the data
     const hourHeaders = [];
     for (let i = 0; i < 24; i++) {
@@ -379,17 +379,17 @@ const DataList = () => {
     }
     // Combine headers
     const headers = metadataHeaders.concat(hourHeaders);
-  
+
     // Create rows for metadata and data
     const wsData = [];
     wsData.push(headers);  // Add headers to the worksheet
-  
+
     Object.keys(service).forEach(serviceId => {
       const { info, hours } = service[serviceId];
-      
+
       // Metadata row
       const metadataRow = [
-      
+
         info.territory,
         info.operator,
         serviceId,
@@ -398,68 +398,74 @@ const DataList = () => {
         info.partner,
         info.service_partner
       ];
-  
+
       // Add hour data to the metadata row
       for (let i = 0; i < 24; i++) {
         const hourData = hours[i] || {};
-      // pg-pgs-pv-pvs format
+        // pg-pgs-pv-pvs format
         metadataRow.push(`${hourData.pingenCount}- ${hourData.pingenCountSuccess} - ${hourData.pinverCount}- ${hourData.pinverCountSuccess}`);
       }
-  
+
       wsData.push(metadataRow);
     });
-  
+
     // Convert data array to a worksheet
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-  
+
     // Set column widths for better readability set auto width
-  
-    ws['!cols'] = headers.map(header => ({ wch: 15 })); 
-  
+
+    ws['!cols'] = headers.map(header => ({ wch: 15 }));
+
     // Append worksheet to workbook
     XLSX.utils.book_append_sheet(wb, ws, 'Data');
-  
+
     // Write the workbook to a file
     XLSX.writeFile(wb, 'data.xlsx');
   };
-  
-  
+
+
 
   return (
     <>
       <div className="custom-search-col">
         <div className="control">
-          <div className="filter-controls">
+       
+          <div className="info-section">
+            <div className="info-box blue">
+              <h2>{totalService}</h2>
+              <p>All IDs</p>
+            </div>
+            <div className="info-box greens">
+              <h2>{countActiveServices() | 0}</h2>
+              <p>Active </p>
+            </div>
+            <div className="info-box reds">
+              <h2>0</h2>
+              <p>Deactive</p>
+            </div>
+            <div className="info-box oranges">
+              <h2>{countNoTrafficServices() | 0}</h2>
+              <p>No Traffic</p>
+            </div>
           </div>
-          <div className='stats-data'>
-            <div className='stats-data-item'>
-              <h3>All IDs</h3>
-              <p className='green'>{totalService}</p>
-            </div>
-            <div className='stats-data-item'>
-              <h3>Active IDs</h3>
-              <p className='green'>{countActiveServices()|0}</p>
-            </div>
-            <div className='stats-data-item'>
-              <h3>No Traffic</h3>
-              <p className='red'>{countNoTrafficServices() | 0}</p>
-            </div>
-          </div>
+          <div className="filters">
+          <form>
+            <input type="search" value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)} autofocus required>
+            </input>
+            <i class="fa fa-search ">
+
+            </i>
+          </form>
           <div className='download'>
             <button onClick={downloadExcel}>
-            <i className="fas fa-download"></i>
-           </button>
+              <img src='download.png' alt='download' />
+            </button>
           </div>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          
-         
-         
+</div>
+
+
+
         </div>
         <div className="table-container">
           <table className="table table-bordered">
@@ -547,7 +553,7 @@ const DataList = () => {
                   className="sticky_head-horizontal-4"
                   rowSpan="2"
                 >
-                  Total Pg 
+                  Total Pg
                   <button
                     onClick={() => handleSort('numSort', 'pgCount', 'asc')}
                     className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
@@ -567,7 +573,7 @@ const DataList = () => {
                   className="sticky_head-horizontal-5"
                   rowSpan="2"
                 >
-                  Total Pv 
+                  Total Pv
                   <button
                     onClick={() => handleSort('numSort', 'pvCount', 'asc')}
                     className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
@@ -597,26 +603,26 @@ const DataList = () => {
               <tr className="hrs">
                 {hours.map((hour, index) => (
                   <React.Fragment key={index}>
-                  <th>
-  <span className="pg">PG</span>
-  <span className="pgs">PGS</span>
-  <div className="sort-buttons">
-    <button
-      onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
-      className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
-      aria-label="Sort ascending"
-    >
-      <i className="fas fa-arrow-up"></i>
-    </button>
-    <button
-      onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
-      className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
-      aria-label="Sort descending"
-    >
-      <i className="fas fa-arrow-down"></i>
-    </button>
-  </div>
-</th>
+                    <th>
+                      <span className="pg">PG</span>
+                      <span className="pgs">PGS</span>
+                      <div className="sort-buttons">
+                        <button
+                          onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
+                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
+                          aria-label="Sort ascending"
+                        >
+                          <i className="fas fa-arrow-up"></i>
+                        </button>
+                        <button
+                          onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
+                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
+                          aria-label="Sort descending"
+                        >
+                          <i className="fas fa-arrow-down"></i>
+                        </button>
+                      </div>
+                    </th>
 
                     <th>
                       <span className="pg">PV</span>
@@ -674,7 +680,7 @@ const DataList = () => {
                             <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
                               <i className="fa-solid fa-file-circle-plus"></i>  Logs
                             </Link>
-                           
+
                           </div>
                         </div>
                       </td>

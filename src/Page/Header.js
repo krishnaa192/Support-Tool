@@ -4,6 +4,7 @@ import InactiveData from '../components/InactiveData';
 import '../css/style.css';
 import '../css/header.css';
 import { processDataByServiceId } from '../utils';
+
 import ApiRequest from '../APi';
 import Loading from '../components/Loading';
 
@@ -126,6 +127,13 @@ const Header = () => {
         <div className="table-one p-2">
           <div className="p-2">
             <div className="row">
+            <h3 className="head_black">
+               <img
+          src="file.png" 
+          alt=""
+          className="logo"
+        />
+        <h1 className="title">Globocom Support Monitoring</h1></h3>
               <div className="tabs">
                 {['all', 'inactive', 'notification'].map((tabName) => (
                   <button
@@ -137,12 +145,12 @@ const Header = () => {
                   </button>
                 ))}
               </div>
-              <h3 className="head_black">Globocom Support Monitoring</h3>
+             
             </div>
           </div>
         </div>
       </div>
-      <hr />
+    
       {tab === 'all' && <DataList data={data} />}
       {tab === 'inactive' && <InactiveData data={data} />}
       {tab === 'notification' && (

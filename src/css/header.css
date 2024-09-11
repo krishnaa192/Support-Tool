@@ -10,10 +10,7 @@
 #root{
     overflow-x: hidden;
 }
-.row{
-    
-    background-color: #a29c99 !important;
-}
+
 .stats-data-item{
 display: flex;
 flex-direction: column;
@@ -48,20 +45,32 @@ flex-direction: column;
     background-color:#524f4f !important;
 }
 
-
+.billex-main{
+  background-color: #FFFFFF !important;
+}
 .row{ 
-    display: flex;
-    flex-direction: row;
-   flex-wrap: nowrap;
-   justify-content: space-between;
-
-  align-items: flex-end;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  height: 100px;
+  justify-content: space-between;
+  align-items: center;
   }
   .head_black{
-    height: 10px;
+    display: flex;
+    padding-left: 52.36px;
+    
+  }
+  .head_black h1{
     color: black;
-    font-size:28px;
-    font-weight: bolder;
+    font-size:22px;
+    line-height: 22px;
+    font-weight: 700;
+  }
+  .head_black img{
+    height: 49.93px;
+    width: 49.93px;
+
   }
 
 
