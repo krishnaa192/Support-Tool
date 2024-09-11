@@ -96,9 +96,10 @@ const Header = () => {
       if (alertData.length > 0) {
         const message = `App Service Id ${serviceId}\nPingenCount or PinverCount is 30 or more with 0 success count`;
         updateNotifications(serviceId, message);
-
-        // Trigger a window alert
+        //add interval to trigger alert every 45 minutes
+        const intervalId = setInterval(() => {
         window.alert(message);
+   }, 45*60*1000); // 45 minutes in milliseconds
       }
     });
   };
