@@ -8,7 +8,7 @@ import ApiRequest from '../APi';
 import MultiSelectDropdown from './MultiSelect';
 import * as XLSX from 'xlsx';
 import Loading from './Loading';
-import { FixedSizeList as List } from 'react-window';
+
 
 
 
@@ -33,8 +33,6 @@ const DataList = () => {
 
 
   const serviceId = useRef(null);
-
-
   useEffect(() => {
     const fetchData = async () => {
 
@@ -450,7 +448,7 @@ const DataList = () => {
           </div>
           <div className="filters">
           <form>
-            <input type="search" value={searchQuery}
+            <input type="search" value={searchQuery} placeholder='Search..'
               onChange={e => setSearchQuery(e.target.value)} autofocus required>
             </input>
             <i class="fa fa-search ">

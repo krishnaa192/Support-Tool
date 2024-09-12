@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ApiRequest from '../APi'; // Ensure this path is correct
-
-import { Link } from 'react-router-dom';
 import '../css/style.css';
 
 const InactiveData = () => {
@@ -165,14 +163,16 @@ const InactiveData = () => {
         <div className="control">
           <div className="filter-controls">
           </div>
-          <input
-            className="search"
-            placeholder="Search"
-            type="text"
-            name="search"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
+          <div className="filters">
+          <form>
+            <input type="search" value={searchQuery} placeholder='Search..'
+              onChange={e => setSearchQuery(e.target.value)} autofocus required>
+            </input>
+            <i class="fa fa-search ">
+
+            </i>
+          </form>
+          </div>
         </div>
       </div>
       <table className="table table-bordered">
