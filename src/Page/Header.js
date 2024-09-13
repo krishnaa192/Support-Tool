@@ -141,9 +141,13 @@ const Header = () => {
                     onClick={() => setTab(tabName)}
                     className={tab === tabName ? 'active' : ''}
                   >
-                    {tabName.charAt(0).toUpperCase() + tabName.slice(1)} Data
+                    {tabName.charAt(0).toUpperCase() + tabName.slice(1)}
                   </button>
                 ))}
+                <div className='tabs'>
+              <button className='logout'>
+              <i class="fa fa-sign-out" aria-hidden="true"></i></button>  
+                </div>
               </div>
              
             </div>

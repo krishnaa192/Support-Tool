@@ -57,7 +57,7 @@ const InactiveData = () => {
       });
 
       const currentHour = new Date().getHours();
-      const hourData = Array.from({ length: 24 }, (_, index) => (currentHour - index + 24) % 24);
+      const hourData = Array.from({ length: currentHour+1 }, (_, index) => (currentHour - index + 24) % 24);
 
       const newInactiveServices = Object.keys(inactiveData).filter(serviceId => {
         const hourData0 = inactiveData[serviceId].hours[(currentHour - 0 + 24) % 24];

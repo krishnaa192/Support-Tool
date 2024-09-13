@@ -115,3 +115,10 @@ flex-direction: column;
   .no-notifications{
     color: white;
   }
+
+.logout{
+  margin-top: -8px !important;
+  height: 38px;
+  margin-left: -19px ! IMPORTANT;
+}
+  
