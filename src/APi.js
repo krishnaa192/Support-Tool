@@ -31,6 +31,8 @@ const ApiRequest = async () => {
     return dataPromise;
 };
 
+
+
 // Function to manually refresh data
 export const refreshApiRequest = () => {
     dataPromise = null; // Reset the promise to force a new API call

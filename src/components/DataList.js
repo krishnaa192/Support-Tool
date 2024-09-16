@@ -29,7 +29,7 @@ const DataList = () => {
   const [operatorFilter, setOperatorFilter] = useState('all');
   const [serviceNameFilter, setserviceNameFilter] = useState('all')
   const [billerNameFilter, setBillerNameFilter] = useState('all');
-
+  const [status, setStatus] = useState(true);
 
 
   const serviceId = useRef(null);
@@ -322,6 +322,13 @@ const DataList = () => {
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
 
+    const toggleStatus = () => {
+      const confirmChange = window.confirm(` Are you sure you want to change the status to ${status ? "Inactive" : "Active"}?`);
+      if (confirmChange) {
+        setStatus(!status); // Toggle between true (active) and false (inactive)
+      }
+    };
+ 
   // Function to count services with no traffic in the last 2 hours
   const countNoTrafficServices = useCallback(() => {
     const twoHoursAgo = (getCurrentHour() - 2 + 24) % 24;
@@ -424,35 +431,34 @@ const DataList = () => {
 
 
   return (
-    <>
-      <div className="custom-search-col">
-        <div className="control">
-       
-          <div className="info-section">
-            <div className="info-box blue">
-              <h2>{totalService}</h2>
-              <p>All IDs</p>
-            </div>
-            <div className="info-box greens">
-              <h2>{countActiveServices() | 0}</h2>
-              <p>Active </p>
-            </div>
-            <div className="info-box reds">
-              <h2>0</h2>
-              <p>Deactive</p>
-            </div>
-            <div className="info-box oranges">
-              <h2>{countNoTrafficServices() | 0}</h2>
-              <p>No Traffic</p>
-            </div>
+
+    <div className="custom-search-col">
+      <div className="control">
+
+        <div className="info-section">
+          <div className="info-box blue">
+            <h2>{totalService}</h2>
+            <p>All IDs</p>
           </div>
-          <div className="filters">
+          <div className="info-box greens">
+            <h2>{countActiveServices() | 0}</h2>
+            <p>Active </p>
+          </div>
+          <div className="info-box reds">
+            <h2>0</h2>
+            <p>Deactive</p>
+          </div>
+          <div className="info-box oranges">
+            <h2>{countNoTrafficServices() | 0}</h2>
+            <p>No Traffic</p>
+          </div>
+        </div>
+        <div className="filters">
           <form>
             <input type="search" value={searchQuery} placeholder='Search..'
               onChange={e => setSearchQuery(e.target.value)} autofocus required>
             </input>
-            <i classname="fa fa-search ">
-
+            <i class="fa fa-search ">
             </i>
           </form>
           <div className='download'>
@@ -460,283 +466,291 @@ const DataList = () => {
               <img src='download.png' alt='download' />
             </button>
           </div>
-</div>
-
-
-
         </div>
-        <div className="table-container">
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                {/* add button for graph */}
-                <th className="sticky_head-horizontal-1" rowSpan="2">
-                  <MultiSelectDropdown
-                    id="territory-filter"
-                    title="Territory"
-                    options={uniqueTerritory}
-                    selectedValue={territoryFilter}
-                    setSelectedValue={setTerritoryFilter}
-                    handleSort={() => handleSort(uniqueTerritory, setTerritoryFilter)}
-                  />
-                </th>
-                <th className="sticky_head" rowSpan="2">
-                  <MultiSelectDropdown
-                    id="operator-filter"
-                    title="Operator"
-                    options={uniqueOperator}
-                    selectedValue={operatorFilter}
-                    setSelectedValue={setOperatorFilter}
-                  />
-                </th>
-                <th className="sticky_head-horizontal-2" rowSpan="2">
-                  App_serviceid
-                  <button
-                    onClick={() => handleSort('numSort', 'id', 'asc')}
-                    className={`sort-button ${numSort.key === 'id' && numSort.direction === 'asc' ? 'active' : ''}`}
-                    aria-label="Sort ascending"
-                  >
-                    <i className="fas fa-arrow-up"></i>
-                  </button>
-                  <button
-                    onClick={() => handleSort('numSort', 'id', 'desc')}
-                    className={`sort-button ${numSort.key === 'id' && numSort.direction === 'desc' ? 'active' : ''}`}
-                    aria-label="Sort descending"
-                  >
-                    <i className="fas fa-arrow-down"></i>
-                  </button>
-                </th>
 
-                <th className="sticky_head-horizontal-3" rowSpan="2">
-                  <MultiSelectDropdown
 
-                    id="biller-name-filter"
-                    title="Biller Name"
-                    options={uniqueBillerName}
-                    selectedValue={billerNameFilter}
-                    setSelectedValue={setBillerNameFilter}
-                  />
 
-                </th>
-                <th className="sticky_head" rowSpan="2">
-                  <MultiSelectDropdown
-                    id="service-name-filter"
-                    title="Service Name"
-                    options={uniqueServiceName}
-                    selectedValue={serviceNameFilter}
-                    setSelectedValue={setserviceNameFilter}
-                  />
-                </th>
-                <th className="sticky_head" rowSpan="2">
-                  <MultiSelectDropdown
-                    id="ad-partner-filter"
-                    title=" Partner"
-                    options={uniqueAdPartners}
-                    selectedValue={adPartnerFilter}
-                    setSelectedValue={setAdPartnerFilter}
-                  />
-                </th>
-                <th className="sticky_head" rowSpan="2">
-
-                  <MultiSelectDropdown
-
-                    id="service-partner-filter"
-                    title="Service Partner"
-                    options={uniqueServicePartner}
-                    selectedValue={servicePartnerFilter}
-                    setSelectedValue={setServicePartnerFilter}
-                  />
-                </th>
-                <th
-                  className="sticky_head-horizontal-4"
-                  rowSpan="2"
+      </div>
+      <div className="table-container">
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              {/* add button for graph */}
+              <th className="sticky_head-horizontal-1" rowSpan="2">
+                <MultiSelectDropdown
+                  id="territory-filter"
+                  title="Territory"
+                  options={uniqueTerritory}
+                  selectedValue={territoryFilter}
+                  setSelectedValue={setTerritoryFilter}
+                  handleSort={() => handleSort(uniqueTerritory, setTerritoryFilter)}
+                />
+              </th>
+              <th className="sticky_head" rowSpan="2">
+                <MultiSelectDropdown
+                  id="operator-filter"
+                  title="Operator"
+                  options={uniqueOperator}
+                  selectedValue={operatorFilter}
+                  setSelectedValue={setOperatorFilter}
+                />
+              </th>
+              <th className="sticky_head-horizontal-2" rowSpan="2">
+                App_serviceid
+                <button
+                  onClick={() => handleSort('numSort', 'id', 'asc')}
+                  className={`sort-button ${numSort.key === 'id' && numSort.direction === 'asc' ? 'active' : ''}`}
+                  aria-label="Sort ascending"
                 >
-                  Total Pg
-                  <button
-                    onClick={() => handleSort('numSort', 'pgCount', 'asc')}
-                    className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
-                    aria-label="Sort ascending"
-                  >
-                    <i className="fas fa-arrow-up"></i>
-                  </button>
-                  <button
-                    onClick={() => handleSort('numSort', 'pgCount', 'desc')}
-                    className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
-                    aria-label="Sort descending"
-                  >
-                    <i className="fas fa-arrow-down"></i>
-                  </button>
-                </th>
-                <th
-                  className="sticky_head-horizontal-5"
-                  rowSpan="2"
+                  <i className="fas fa-arrow-up"></i>
+                </button>
+                <button
+                  onClick={() => handleSort('numSort', 'id', 'desc')}
+                  className={`sort-button ${numSort.key === 'id' && numSort.direction === 'desc' ? 'active' : ''}`}
+                  aria-label="Sort descending"
                 >
-                  Total Pv
-                  <button
-                    onClick={() => handleSort('numSort', 'pvCount', 'asc')}
-                    className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
-                    aria-label="Sort ascending"
-                  >
-                    <i className="fas fa-arrow-up"></i>
-                  </button>
-                  <button
-                    onClick={() => handleSort('numSort', 'pvCount', 'desc')}
-                    className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
-                    aria-label="Sort descending"
-                  >
-                    <i className="fas fa-arrow-down"></i>
-                  </button>
+                  <i className="fas fa-arrow-down"></i>
+                </button>
+              </th>
+
+              <th className="sticky_head-horizontal-3" rowSpan="2">
+                <MultiSelectDropdown
+
+                  id="biller-name-filter"
+                  title="Biller Name"
+                  options={uniqueBillerName}
+                  selectedValue={billerNameFilter}
+                  setSelectedValue={setBillerNameFilter}
+                />
+
+              </th>
+              <th className="sticky_head" rowSpan="2">
+                <MultiSelectDropdown
+                  id="service-name-filter"
+                  title="Service Name"
+                  options={uniqueServiceName}
+                  selectedValue={serviceNameFilter}
+                  setSelectedValue={setserviceNameFilter}
+                />
+              </th>
+              <th className="sticky_head" rowSpan="2">
+                <MultiSelectDropdown
+                  id="ad-partner-filter"
+                  title=" Partner"
+                  options={uniqueAdPartners}
+                  selectedValue={adPartnerFilter}
+                  setSelectedValue={setAdPartnerFilter}
+                />
+              </th>
+              <th className="sticky_head" rowSpan="2">
+
+                <MultiSelectDropdown
+
+                  id="service-partner-filter"
+                  title="Service Partner"
+                  options={uniqueServicePartner}
+                  selectedValue={servicePartnerFilter}
+                  setSelectedValue={setServicePartnerFilter}
+                />
+              </th>
+              <th
+                className="sticky_head-horizontal-4"
+                rowSpan="2"
+              >
+                Total Pg
+                <button
+                  onClick={() => handleSort('numSort', 'pgCount', 'asc')}
+                  className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
+                  aria-label="Sort ascending"
+                >
+                  <i className="fas fa-arrow-up"></i>
+                </button>
+                <button
+                  onClick={() => handleSort('numSort', 'pgCount', 'desc')}
+                  className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
+                  aria-label="Sort descending"
+                >
+                  <i className="fas fa-arrow-down"></i>
+                </button>
+              </th>
+              <th
+                className="sticky_head-horizontal-5"
+                rowSpan="2"
+              >
+                Total Pv
+                <button
+                  onClick={() => handleSort('numSort', 'pvCount', 'asc')}
+                  className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
+                  aria-label="Sort ascending"
+                >
+                  <i className="fas fa-arrow-up"></i>
+                </button>
+                <button
+                  onClick={() => handleSort('numSort', 'pvCount', 'desc')}
+                  className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
+                  aria-label="Sort descending"
+                >
+                  <i className="fas fa-arrow-down"></i>
+                </button>
+              </th>
+              <th className='sticky_head_horizontal-6' rowSpan={2}>
+                Action
+              </th>
+              {hours.map((hour, index) => (
+                <th className="sticky_head" key={index} colSpan="2">
+                  {hour >= 0 && hour < 12
+                    ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
+                    : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
                 </th>
-                <th className='sticky_head_horizontal-6' rowSpan={2}>
-                  Action
-                </th>
-                {hours.map((hour, index) => (
-                  <th className="sticky_head" key={index} colSpan="2">
-                    {hour >= 0 && hour < 12
-                      ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
-                      : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
+              ))}
+            </tr>
+            <tr className="hrs">
+              {hours.map((hour, index) => (
+                <React.Fragment key={index}>
+                  <th>
+                    <span className="pg">PG</span>
+                    <span className="pgs">PGS</span>
+                    <div className="sort-buttons">
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
+                        aria-label="Sort ascending"
+                      >
+                        <i className="fas fa-arrow-up"></i>
+                      </button>
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
+                        aria-label="Sort descending"
+                      >
+                        <i className="fas fa-arrow-down"></i>
+                      </button>
+                    </div>
                   </th>
-                ))}
-              </tr>
-              <tr className="hrs">
-                {hours.map((hour, index) => (
-                  <React.Fragment key={index}>
-                    <th>
-                      <span className="pg">PG</span>
-                      <span className="pgs">PGS</span>
-                      <div className="sort-buttons">
-                        <button
-                          onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
-                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
-                          aria-label="Sort ascending"
-                        >
-                          <i className="fas fa-arrow-up"></i>
-                        </button>
-                        <button
-                          onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
-                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
-                          aria-label="Sort descending"
-                        >
-                          <i className="fas fa-arrow-down"></i>
-                        </button>
-                      </div>
-                    </th>
 
-                    <th>
-                      <span className="pg">PV</span>
-                      <span className="pgs">PVS</span>
-                      <div className="sort-buttons">
-                        <button
-                          onClick={() => handleSort('sortConfig', 'pv', 'asc', hour)}
-                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
-                        >
-                          <i className="fas fa-arrow-up"></i>
-                        </button>
-                        <button
-                          onClick={() => handleSort('sortConfig', 'pv', 'desc', hour)}
-                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
-                        >
-                          <i className="fas fa-arrow-down"></i>
-                        </button>
-                      </div>
-                    </th>
-                  </React.Fragment>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
+                  <th>
+                    <span className="pg">PV</span>
+                    <span className="pgs">PVS</span>
+                    <div className="sort-buttons">
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pv', 'asc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'asc' ? 'active' : 'asc'}`}
+                      >
+                        <i className="fas fa-arrow-up"></i>
+                      </button>
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pv', 'desc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pv' && sortConfig.direction === 'desc' ? 'active' : 'desc'}`}
+                      >
+                        <i className="fas fa-arrow-down"></i>
+                      </button>
+                    </div>
+                  </th>
+                </React.Fragment>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
 
-              {filteredServiceIds.length > 0 ? (
+            {filteredServiceIds.length > 0 ? (
 
-                filteredServiceIds.map(serviceId => {
-                  const { info, hours: serviceHours } = data[serviceId] || {};
-                  return (
-                    <tr key={serviceId}>
-                      <td className="sticky-1">{info?.territory || '-'}</td>
-                      <td>{info?.operator || '-'}</td>
-                      <td className="service-id-cell">
-                        {serviceId}
-                      </td>
-                      <td className="sticky-3">{info?.billername || '-'}</td>
-                      <td>{info?.servicename || '-'}</td>
-                      <td>{info?.partner || '-'}</td>
-                      <td>{info?.service_partner || '-'}</td>
-                      <td className="sticky-4">
-                        {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
-                      </td>
-                      <td className="sticky-5">
-                        {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
-                      </td>
-                      <td className='sticky-6'>
-                        <div className='dropdown'>
-                          <button className='dropbtn'><i className="fa fa-tasks"></i></button>
-                          <div className='dropdown-content'>
-                            <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
-                              <i className="fa-solid fa-chart-line"></i>
-                              Graph
-                            </a>
-                            <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
-                              <i className="fa-solid fa-file-circle-plus"></i>  Logs
-                            </Link>
-
+              filteredServiceIds.map(serviceId => {
+                const { info, hours: serviceHours } = data[serviceId] || {};
+                return (
+                  <tr key={serviceId}>
+                    <td className="sticky-1">{info?.territory || '-'}</td>
+                    <td>{info?.operator || '-'}</td>
+                    <td className="service-id-cell">
+                      {serviceId}
+                    </td>
+                    <td className="sticky-3">{info?.billername || '-'}</td>
+                    <td>{info?.servicename || '-'}</td>
+                    <td>{info?.partner || '-'}</td>
+                    <td>{info?.service_partner || '-'}</td>
+                    <td className="sticky-4">
+                      {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
+                    </td>
+                    <td className="sticky-5">
+                      {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
+                    </td>
+                    <td className='sticky-6'>
+                      <div className='dropdown'>
+                        <button className='dropbtn'><i className="fa fa-tasks"></i></button>
+                        <div className='dropdown-content'>
+                          <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
+                            <i className="fa-solid fa-chart-line"></i>
+                            Graph
+                          </a>
+                          <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
+                            <i className="fa-solid fa-file-circle-plus"></i>  Logs
+                          </Link>
+                          <div className="status-toggle">
+                            <button
+                              className={`button status-button ${status ? "active" : "inactive"}`}
+                              onClick={toggleStatus}
+                            >
+                              <i className={`fas ${status ? "fa-check" : "fa-times"}`}></i>
+                              <span className="status-text">
+                                {status ? " Active" : " Inactive"}
+                              </span>
+                            </button>
                           </div>
+
                         </div>
-                      </td>
-                      {hours.map((hour, index) => {
-                        const hourData = serviceHours[hour] || {};
-                        return (
-                          <React.Fragment key={index}>
-                            <td
-                              className={`text-center ${getColorClass(
-                                hourData.pingenCountSuccess,
-                                hourData.pingenCount
-                              )}`}
-                            >
-                              <div className={`pg ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
-                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pingenCount}
-                              </div>
-                              <div className={`pgs ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
-                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? '-' : hourData.pingenCountSuccess}
-                              </div>
+                      </div>
+                    </td>
+                    {hours.map((hour, index) => {
+                      const hourData = serviceHours[hour] || {};
+                      return (
+                        <React.Fragment key={index}>
+                          <td
+                            className={`text-center ${getColorClass(
+                              hourData.pingenCountSuccess,
+                              hourData.pingenCount
+                            )}`}
+                          >
+                            <div className={`pg ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                              {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pingenCount}
+                            </div>
+                            <div className={`pgs ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                              {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? '-' : hourData.pingenCountSuccess}
+                            </div>
 
-                            </td>
-                            <td
-                              className={`text-center ${getColorClass(
-                                hourData.pinverCountSuccess,
-                                hourData.pinverCount
-                              )}`}
-                            >
-                              {/* // add consition when both are 0 then show -  else  normal value*/}
-                              <div className={`pg ${hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? 'grey-bg' : ''}`}>
-                                {hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pinverCount}
-                              </div>
-                              <div className={`pgs ${hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? 'grey-bg' : ''}`}>
-                                {hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? '-' : hourData.pinverCountSuccess}
-                              </div>
+                          </td>
+                          <td
+                            className={`text-center ${getColorClass(
+                              hourData.pinverCountSuccess,
+                              hourData.pinverCount
+                            )}`}
+                          >
+                            {/* // add consition when both are 0 then show -  else  normal value*/}
+                            <div className={`pg ${hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                              {hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pinverCount}
+                            </div>
+                            <div className={`pgs ${hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                              {hourData.pinverCount === 0 && hourData.pinverCountSuccess === 0 ? '-' : hourData.pinverCountSuccess}
+                            </div>
 
-                            </td>
-                          </React.Fragment>
-                        );
-                      })}
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={30} className="text-center">
-                    No data found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-        </div>
+                          </td>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={30} className="text-center">
+                  No data found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
       </div>
 
-
-    </>
+    </div>
 
   );
 };
