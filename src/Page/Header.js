@@ -4,11 +4,13 @@ import InactiveData from '../components/InactiveData';
 import '../css/style.css';
 import '../css/header.css';
 import { processDataByServiceId } from '../utils';
+import { useNavigate } from 'react-router-dom'
 
 import ApiRequest from '../APi';
 import Loading from '../components/Loading';
 
 const Header = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState('all');
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -120,7 +122,14 @@ const Header = () => {
   if (loading) {
     return <Loading />;
   }
+  const handleLogout = () => {
+    // Clear session storage
+    sessionStorage.removeItem('userEmail');
+    sessionStorage.removeItem('userId'); // If you have other user data stored, clear that too
 
+    // Redirect to the login page
+    navigate('/login');
+  };
   return (
     <>
       <div className="billex-main">
@@ -145,8 +154,8 @@ const Header = () => {
                   </button>
                 ))}
                 <div className='tabs'>
-              <button className='logout'>
-              <i class="fa fa-sign-out" aria-hidden="true"></i></button>  
+              <button className='logout' onClick={handleLogout}>
+              <i classname="fa fa-sign-out" aria-hidden="true"></i></button>  
                 </div>
               </div>
              

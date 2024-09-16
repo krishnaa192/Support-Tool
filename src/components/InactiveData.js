@@ -168,7 +168,7 @@ const InactiveData = () => {
             <input type="search" value={searchQuery} placeholder='Search..'
               onChange={e => setSearchQuery(e.target.value)} autofocus required>
             </input>
-            <i class="fa fa-search ">
+            <i classname="fa fa-search ">
 
             </i>
           </form>
