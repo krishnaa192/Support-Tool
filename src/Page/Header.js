@@ -155,7 +155,7 @@ const Header = () => {
                 ))}
                 <div className='tabs'>
               <button className='logout' onClick={handleLogout}>
-              <i classname="fa fa-sign-out" aria-hidden="true"></i></button>  
+              <FaSignOutAlt /></button>  
                 </div>
               </div>
              

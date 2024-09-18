@@ -36,7 +36,7 @@ const DataList = () => {
   const [operatorFilter, setOperatorFilter] = useState('all');
   const [serviceNameFilter, setserviceNameFilter] = useState('all')
   const [billerNameFilter, setBillerNameFilter] = useState('all');
-
+const [status, setStatus] = useState(1);
 
 
   const serviceId = useRef(null);
@@ -497,9 +497,7 @@ const DataList = () => {
             <input type="search" value={searchQuery} placeholder='Search..'
               onChange={e => setSearchQuery(e.target.value)} autofocus required>
             </input>
-            <i classname="fa fa-search ">
-
-            </i>
+            <FaSearch  className='search-icon'/>
           </form>
           <div className='download'>
             <button onClick={downloadExcel}>
@@ -597,6 +595,28 @@ const DataList = () => {
                   className="sticky_head-horizontal-4"
                   rowSpan="2"
                 >
+                  
+                  <MultiSelectDropdown
+
+                    id="StatusFilter"
+                    title="Status"
+                    options={uniqueStatus}
+                    selectedValue={statusFilter}
+                    setSelectedValue={setStatusFilter}
+                  />
+                 
+                </th>
+                <th
+                  className="sticky_head-horizontal-4"
+                  rowSpan="2"
+                >
+                 Daily Cap
+                 
+                </th>
+                <th
+                  className="sticky_head-horizontal-4"
+                  rowSpan="2"
+                >
                   Total Pg
                   <button
                     onClick={() => handleSort('numSort', 'pgCount', 'asc')}
@@ -632,6 +652,14 @@ const DataList = () => {
                   >
                     <i className="fas fa-arrow-down"></i>
                   </button>
+                </th>
+
+
+                <th
+                  className="sticky_head-horizontal-5"
+                  rowSpan="2"
+                >
+                  Status
                 </th>
                 <th className='sticky_head_horizontal-6' rowSpan={2}>
                   Action
@@ -707,6 +735,8 @@ const DataList = () => {
                       <td>{info?.servicename || '-'}</td>
                       <td>{info?.partner || '-'}</td>
                       <td>{info?.service_partner || '-'}</td>
+                      <td>{info.status || "None"}</td>
+                      <td>{info.dailycap || "None"}</td>
                       <td className="sticky-4">
                         {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
                       </td>
@@ -717,13 +747,28 @@ const DataList = () => {
                         <div className='dropdown'>
                           <button className='dropbtn'><i className="fa fa-tasks"></i></button>
                           <div className='dropdown-content'>
-                            <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
+                            {/* <a href={`/graph/${serviceId}`}rel="noopener noreferrer" className='model'>
                               <i className="fa-solid fa-chart-line"></i>
                               Graph
-                            </a>
+                            </a> */}
+                         <button onClick={() => openModal(serviceId)}>     <i className="fa-solid fa-chart-line"></i>
+                          Graph</button>
+
                             <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
                               <i className="fa-solid fa-file-circle-plus"></i>  Logs
                             </Link>
+
+                        {/* show this button if user mail is support  */}
+                        {
+                          checkemail()==="support@globocom.info" ?  <button className='toggle-button' onClick={() => alert('This feature is not available yet')}>
+                          {/* Toggle button for active/inactive */}
+                          {status === 1
+                            ?<FaToggleOn className='toggle-on'/>
+                            :<FaToggleOff className='toggle'/>}
+                        </button> :""
+                        }
+                       
+                          
 
                           </div>
                         </div>
@@ -778,12 +823,18 @@ const DataList = () => {
         </table>
 
         </div>
-
+    
       </div>
-
+      {isModalOpen && (
+        <GraphData
+          isOpen={isModalOpen} 
+          onClose={closeModal} 
+          serviceId={selectedServiceId}  // Pass the selected service ID to the Modal
+        />
+      )}
 
     </>
-
+ 
   );
   
 };

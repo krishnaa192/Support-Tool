@@ -58,26 +58,21 @@ const Login = () => {
                 <MDBBtn className="mb-4 px-5 login-btn" color="dark" size="lg" type="submit">Login</MDBBtn>
               </form>
               </div>
-<<<<<<< HEAD
               <button className="button login__submit" type="submit">
                 <span className="button__text">Log In</span>
                 <i className="button__icon fas fa-chevron-right"></i>
               </button>
             </form>
           </div>
-          
+          <div className="screen__background">
+            <span className="screen__background__shape screen__background__shape4"></span>
+            <span className="screen__background__shape screen__background__shape3"></span>
+            <span className="screen__background__shape screen__background__shape2"></span>
+            <span className="screen__background__shape screen__background__shape1"></span>
+          </div>
         </div>
       </div>
     </>
-=======
-       
-            </MDBCardBody>
-          </MDBCol>
-
-        </MDBRow>
-      </MDBCard>
-    </MDBContainer>
->>>>>>> 35439d2 (Added changes)
   );
 };
 
