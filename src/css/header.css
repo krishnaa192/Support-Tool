@@ -121,4 +121,6 @@ flex-direction: column;
   height: 38px;
   margin-left: -19px ! IMPORTANT;
 }
-  
+  svg{
+    background-color:transparent !important;
+  }

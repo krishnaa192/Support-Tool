@@ -66,7 +66,11 @@ body {
   border-radius: 6px;
 }
 
+.search-icon{
+  font-size: 30px;
+  color:black;
 
+}
 
 /* Table container */
 .table-container {
@@ -366,7 +370,7 @@ table td {
   }
   
 /* //SEARCH BAR */
-form {
+ .filters form {
 display: flex;
 margin-right: 9px;
   transition: all 1s;
@@ -427,6 +431,12 @@ form:valid .fa {
   color: white;
 }
 
+.toggle-button i{
+  font-size: 28px;
+}
+.fa-toggle-on{
+  color: green;
+}
 
 
 form:valid button {
@@ -958,4 +968,14 @@ button{
 }
 th svg{
   background-color: transparent !important;
+}
+
+.toggle{
+  font-size: 34px;
+  color:red;
+  background-color: transparent;
+}
+.toggle-on{
+  color: green;
+  font-size: 34px;
 }

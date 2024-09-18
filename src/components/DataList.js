@@ -7,7 +7,12 @@ import '../css/dropdown.css';
 import ApiRequest from '../APi';
 import MultiSelectDropdown from './MultiSelect';
 import * as XLSX from 'xlsx';
-import Loading from './Loading';
+import { FaSearch } from "react-icons/fa";
+import { FaToggleOff } from "react-icons/fa6";
+import { FaToggleOn } from "react-icons/fa6";
+import Modal from './Modal';
+
+import GraphData from '../Page/GraphData';
 
 
 
@@ -18,18 +23,20 @@ const DataList = () => {
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
   const [activeServices, setActiveServices] = useState([]);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [sortType, setSortType] = useState('');
   const [sortConfig, setSortConfig] = useState({});
   const [numSort, setNumSort] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [servicePartnerFilter, setServicePartnerFilter] = useState('all');
+  const [statusFilter,setStatusFilter]=useState('all')
   const [adPartnerFilter, setAdPartnerFilter] = useState('all');
   const [territoryFilter, setTerritoryFilter] = useState('all');
   const [operatorFilter, setOperatorFilter] = useState('all');
   const [serviceNameFilter, setserviceNameFilter] = useState('all')
   const [billerNameFilter, setBillerNameFilter] = useState('all');
-  const [status, setStatus] = useState(true);
+
 
 
   const serviceId = useRef(null);
@@ -49,6 +56,8 @@ const DataList = () => {
           billername,
           service_partner,
           partner,
+          status,
+          dailycap,
           time,
           pingenCount = 0,
           pingenCountSuccess = 0,
@@ -57,7 +66,8 @@ const DataList = () => {
         } = item;
         if (!acc[app_serviceid]) {
           acc[app_serviceid] = {
-            info: { territory, servicename, operator, partner, billername, service_partner },
+            info: { territory, servicename, operator, partner, billername, service_partner,  status,
+              dailycap },
             hours: Array.from({ length: 24 }, () => ({
               pingenCount: 0,
               pingenCountSuccess: 0,
@@ -160,8 +170,12 @@ const DataList = () => {
   const uniqueServiceName = useMemo(() => {
     const serviceName = new Set(Object.values(data).map(item => item.info.servicename));
     return Array.from(serviceName);
-
+    
   }, [data]);
+  const uniqueStatus=useMemo(()=>{
+    const statusName=new Set(Object.values(data).map(item => item.info.status))
+    return Array.from(statusName)
+  },[data]);
 
   const filterData = useCallback((items, filter, field) => {
     if (filter === 'all') return items; // No filtering if 'all' is selected
@@ -256,6 +270,28 @@ const DataList = () => {
     }
   };
 
+  const checkemail = () => {
+    // Retrieve session data from sessionStorage
+    const sessionData = sessionStorage.getItem("Requested Data");
+    // If session data exists, parse and return the user's email
+    if (sessionData) {
+      const sdata = JSON.parse(sessionData);
+      return sdata.email;
+    }
+  };
+
+  const openModal = (serviceId) => {
+    setSelectedServiceId(serviceId); // Set the unique ID
+    setIsModalOpen(true); // Open the modal
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false); // Close the modal
+    setSelectedServiceId(null); // Clear the selected ID
+  };
+
+
+
 
   const filteredServiceIds = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -270,7 +306,9 @@ const DataList = () => {
         (info?.operator || '').toLowerCase().includes(query) ||
         (info?.partner || '').toLowerCase().includes(query) ||
         (info?.billername || '').toLowerCase().includes(query) ||
-        (info?.service_partner || '').toLowerCase().includes(query)
+        (info?.service_partner || '').toLowerCase().includes(query)||
+        (info?.status || '').toLowerCase().includes(query)
+
       );
     });
 
@@ -280,9 +318,10 @@ const DataList = () => {
     const serviceNameByFilter = filterData(operatorByFilter, serviceNameFilter, 'servicename');
     const billerNameByFilter = filterData(serviceNameByFilter, billerNameFilter, 'billername');
     const partnerByFilter = filterData(billerNameByFilter, adPartnerFilter, 'partner');
+    const getstatusFilter=filterData(partnerByFilter,statusFilter,"Status")
 
-    return partnerByFilter;
-  }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter, data, filterData]);
+    return getstatusFilter;
+  }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter,statusFilter, data, filterData]);
 
   // Toggle popup visibility  by clicking on service id and i used useparam to get the id
 
@@ -458,7 +497,8 @@ const DataList = () => {
             <input type="search" value={searchQuery} placeholder='Search..'
               onChange={e => setSearchQuery(e.target.value)} autofocus required>
             </input>
-            <i class="fa fa-search ">
+            <i classname="fa fa-search ">
+
             </i>
           </form>
           <div className='download'>
@@ -546,87 +586,87 @@ const DataList = () => {
 
                 <MultiSelectDropdown
 
-                  id="service-partner-filter"
-                  title="Service Partner"
-                  options={uniqueServicePartner}
-                  selectedValue={servicePartnerFilter}
-                  setSelectedValue={setServicePartnerFilter}
-                />
-              </th>
-              <th
-                className="sticky_head-horizontal-4"
-                rowSpan="2"
-              >
-                Total Pg
-                <button
-                  onClick={() => handleSort('numSort', 'pgCount', 'asc')}
-                  className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
-                  aria-label="Sort ascending"
-                >
-                  <i className="fas fa-arrow-up"></i>
-                </button>
-                <button
-                  onClick={() => handleSort('numSort', 'pgCount', 'desc')}
-                  className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
-                  aria-label="Sort descending"
-                >
-                  <i className="fas fa-arrow-down"></i>
-                </button>
-              </th>
-              <th
-                className="sticky_head-horizontal-5"
-                rowSpan="2"
-              >
-                Total Pv
-                <button
-                  onClick={() => handleSort('numSort', 'pvCount', 'asc')}
-                  className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
-                  aria-label="Sort ascending"
-                >
-                  <i className="fas fa-arrow-up"></i>
-                </button>
-                <button
-                  onClick={() => handleSort('numSort', 'pvCount', 'desc')}
-                  className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
-                  aria-label="Sort descending"
-                >
-                  <i className="fas fa-arrow-down"></i>
-                </button>
-              </th>
-              <th className='sticky_head_horizontal-6' rowSpan={2}>
-                Action
-              </th>
-              {hours.map((hour, index) => (
-                <th className="sticky_head" key={index} colSpan="2">
-                  {hour >= 0 && hour < 12
-                    ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
-                    : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
+                    id="service-partner-filter"
+                    title="Service Partner"
+                    options={uniqueServicePartner}
+                    selectedValue={servicePartnerFilter}
+                    setSelectedValue={setServicePartnerFilter}
+                  />
                 </th>
-              ))}
-            </tr>
-            <tr className="hrs">
-              {hours.map((hour, index) => (
-                <React.Fragment key={index}>
-                  <th>
-                    <span className="pg">PG</span>
-                    <span className="pgs">PGS</span>
-                    <div className="sort-buttons">
-                      <button
-                        onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
-                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
-                        aria-label="Sort ascending"
-                      >
-                        <i className="fas fa-arrow-up"></i>
-                      </button>
-                      <button
-                        onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
-                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
-                        aria-label="Sort descending"
-                      >
-                        <i className="fas fa-arrow-down"></i>
-                      </button>
-                    </div>
+                <th
+                  className="sticky_head-horizontal-4"
+                  rowSpan="2"
+                >
+                  Total Pg
+                  <button
+                    onClick={() => handleSort('numSort', 'pgCount', 'asc')}
+                    className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
+                    aria-label="Sort ascending"
+                  >
+                    <i className="fas fa-arrow-up"></i>
+                  </button>
+                  <button
+                    onClick={() => handleSort('numSort', 'pgCount', 'desc')}
+                    className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
+                    aria-label="Sort descending"
+                  >
+                    <i className="fas fa-arrow-down"></i>
+                  </button>
+                </th>
+                <th
+                  className="sticky_head-horizontal-5"
+                  rowSpan="2"
+                >
+                  Total Pv
+                  <button
+                    onClick={() => handleSort('numSort', 'pvCount', 'asc')}
+                    className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
+                    aria-label="Sort ascending"
+                  >
+                    <i className="fas fa-arrow-up"></i>
+                  </button>
+                  <button
+                    onClick={() => handleSort('numSort', 'pvCount', 'desc')}
+                    className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
+                    aria-label="Sort descending"
+                  >
+                    <i className="fas fa-arrow-down"></i>
+                  </button>
+                </th>
+                <th className='sticky_head_horizontal-6' rowSpan={2}>
+                  Action
+                </th>
+                {hours.map((hour, index) => (
+                  <th className="sticky_head" key={index} colSpan="2">
+                    {hour >= 0 && hour < 12
+                      ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
+                      : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
                   </th>
+                ))}
+              </tr>
+              <tr className="hrs">
+                {hours.map((hour, index) => (
+                  <React.Fragment key={index}>
+                    <th>
+                      <span className="pg">PG</span>
+                      <span className="pgs">PGS</span>
+                      <div className="sort-buttons">
+                        <button
+                          onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
+                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
+                          aria-label="Sort ascending"
+                        >
+                          <i className="fas fa-arrow-up"></i>
+                        </button>
+                        <button
+                          onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
+                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
+                          aria-label="Sort descending"
+                        >
+                          <i className="fas fa-arrow-down"></i>
+                        </button>
+                      </div>
+                    </th>
 
                   <th>
                     <span className="pg">PV</span>
@@ -654,67 +694,56 @@ const DataList = () => {
 
             {filteredServiceIds.length > 0 ? (
 
-              filteredServiceIds.map(serviceId => {
-                const { info, hours: serviceHours } = data[serviceId] || {};
-                return (
-                  <tr key={serviceId}>
-                    <td className="sticky-1">{info?.territory || '-'}</td>
-                    <td>{info?.operator || '-'}</td>
-                    <td className="service-id-cell">
-                      {serviceId}
-                    </td>
-                    <td className="sticky-3">{info?.billername || '-'}</td>
-                    <td>{info?.servicename || '-'}</td>
-                    <td>{info?.partner || '-'}</td>
-                    <td>{info?.service_partner || '-'}</td>
-                    <td className="sticky-4">
-                      {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
-                    </td>
-                    <td className="sticky-5">
-                      {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
-                    </td>
-                    <td className='sticky-6'>
-                      <div className='dropdown'>
-                        <button className='dropbtn'><i className="fa fa-tasks"></i></button>
-                        <div className='dropdown-content'>
-                          <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
-                            <i className="fa-solid fa-chart-line"></i>
-                            Graph
-                          </a>
-                          <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
-                            <i className="fa-solid fa-file-circle-plus"></i>  Logs
-                          </Link>
-                          <div className="status-toggle">
-                            <button
-                              className={`button status-button ${status ? "active" : "inactive"}`}
-                              onClick={toggleStatus}
-                            >
-                              <i className={`fas ${status ? "fa-check" : "fa-times"}`}></i>
-                              <span className="status-text">
-                                {status ? " Active" : " Inactive"}
-                              </span>
-                            </button>
-                          </div>
+                filteredServiceIds.map(serviceId => {
+                  const { info, hours: serviceHours } = data[serviceId] || {};
+                  return (
+                    <tr key={serviceId}>
+                      <td className="sticky-1">{info?.territory || '-'}</td>
+                      <td>{info?.operator || '-'}</td>
+                      <td className="service-id-cell">
+                        {serviceId}
+                      </td>
+                      <td className="sticky-3">{info?.billername || '-'}</td>
+                      <td>{info?.servicename || '-'}</td>
+                      <td>{info?.partner || '-'}</td>
+                      <td>{info?.service_partner || '-'}</td>
+                      <td className="sticky-4">
+                        {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
+                      </td>
+                      <td className="sticky-5">
+                        {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
+                      </td>
+                      <td className='sticky-6'>
+                        <div className='dropdown'>
+                          <button className='dropbtn'><i className="fa fa-tasks"></i></button>
+                          <div className='dropdown-content'>
+                            <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
+                              <i className="fa-solid fa-chart-line"></i>
+                              Graph
+                            </a>
+                            <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
+                              <i className="fa-solid fa-file-circle-plus"></i>  Logs
+                            </Link>
 
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    {hours.map((hour, index) => {
-                      const hourData = serviceHours[hour] || {};
-                      return (
-                        <React.Fragment key={index}>
-                          <td
-                            className={`text-center ${getColorClass(
-                              hourData.pingenCountSuccess,
-                              hourData.pingenCount
-                            )}`}
-                          >
-                            <div className={`pg ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
-                              {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pingenCount}
-                            </div>
-                            <div className={`pgs ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
-                              {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? '-' : hourData.pingenCountSuccess}
-                            </div>
+                      </td>
+                      {hours.map((hour, index) => {
+                        const hourData = serviceHours[hour] || {};
+                        return (
+                          <React.Fragment key={index}>
+                            <td
+                              className={`text-center ${getColorClass(
+                                hourData.pingenCountSuccess,
+                                hourData.pingenCount
+                              )}`}
+                            >
+                              <div className={`pg ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pingenCount}
+                              </div>
+                              <div className={`pgs ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? '-' : hourData.pingenCountSuccess}
+                              </div>
 
                           </td>
                           <td
@@ -748,11 +777,15 @@ const DataList = () => {
           </tbody>
         </table>
 
+        </div>
+
       </div>
 
-    </div>
+
+    </>
 
   );
+  
 };
 
 export default DataList;
