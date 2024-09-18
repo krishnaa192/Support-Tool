@@ -7,7 +7,12 @@ import '../css/dropdown.css';
 import ApiRequest from '../APi';
 import MultiSelectDropdown from './MultiSelect';
 import * as XLSX from 'xlsx';
-import Loading from './Loading';
+import { FaSearch } from "react-icons/fa";
+import { FaToggleOff } from "react-icons/fa6";
+import { FaToggleOn } from "react-icons/fa6";
+import Modal from './Modal';
+
+import GraphData from '../Page/GraphData';
 
 
 
@@ -18,18 +23,20 @@ const DataList = () => {
   const [serviceIds, setServiceIds] = useState([]);
   const [hours, setHours] = useState([]);
   const [activeServices, setActiveServices] = useState([]);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [sortType, setSortType] = useState('');
   const [sortConfig, setSortConfig] = useState({});
   const [numSort, setNumSort] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [servicePartnerFilter, setServicePartnerFilter] = useState('all');
+  const [statusFilter,setStatusFilter]=useState('all')
   const [adPartnerFilter, setAdPartnerFilter] = useState('all');
   const [territoryFilter, setTerritoryFilter] = useState('all');
   const [operatorFilter, setOperatorFilter] = useState('all');
   const [serviceNameFilter, setserviceNameFilter] = useState('all')
   const [billerNameFilter, setBillerNameFilter] = useState('all');
-
+const [status, setStatus] = useState(1);
 
 
   const serviceId = useRef(null);
@@ -49,6 +56,8 @@ const DataList = () => {
           billername,
           service_partner,
           partner,
+          status,
+          dailycap,
           time,
           pingenCount = 0,
           pingenCountSuccess = 0,
@@ -57,7 +66,8 @@ const DataList = () => {
         } = item;
         if (!acc[app_serviceid]) {
           acc[app_serviceid] = {
-            info: { territory, servicename, operator, partner, billername, service_partner },
+            info: { territory, servicename, operator, partner, billername, service_partner,  status,
+              dailycap },
             hours: Array.from({ length: 24 }, () => ({
               pingenCount: 0,
               pingenCountSuccess: 0,
@@ -160,8 +170,12 @@ const DataList = () => {
   const uniqueServiceName = useMemo(() => {
     const serviceName = new Set(Object.values(data).map(item => item.info.servicename));
     return Array.from(serviceName);
-
+    
   }, [data]);
+  const uniqueStatus=useMemo(()=>{
+    const statusName=new Set(Object.values(data).map(item => item.info.status))
+    return Array.from(statusName)
+  },[data]);
 
   const filterData = useCallback((items, filter, field) => {
     if (filter === 'all') return items; // No filtering if 'all' is selected
@@ -256,6 +270,28 @@ const DataList = () => {
     }
   };
 
+  const checkemail = () => {
+    // Retrieve session data from sessionStorage
+    const sessionData = sessionStorage.getItem("Requested Data");
+    // If session data exists, parse and return the user's email
+    if (sessionData) {
+      const sdata = JSON.parse(sessionData);
+      return sdata.email;
+    }
+  };
+
+  const openModal = (serviceId) => {
+    setSelectedServiceId(serviceId); // Set the unique ID
+    setIsModalOpen(true); // Open the modal
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false); // Close the modal
+    setSelectedServiceId(null); // Clear the selected ID
+  };
+
+
+
 
   const filteredServiceIds = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -270,7 +306,9 @@ const DataList = () => {
         (info?.operator || '').toLowerCase().includes(query) ||
         (info?.partner || '').toLowerCase().includes(query) ||
         (info?.billername || '').toLowerCase().includes(query) ||
-        (info?.service_partner || '').toLowerCase().includes(query)
+        (info?.service_partner || '').toLowerCase().includes(query)||
+        (info?.status || '').toLowerCase().includes(query)
+
       );
     });
 
@@ -280,9 +318,10 @@ const DataList = () => {
     const serviceNameByFilter = filterData(operatorByFilter, serviceNameFilter, 'servicename');
     const billerNameByFilter = filterData(serviceNameByFilter, billerNameFilter, 'billername');
     const partnerByFilter = filterData(billerNameByFilter, adPartnerFilter, 'partner');
+    const getstatusFilter=filterData(partnerByFilter,statusFilter,"Status")
 
-    return partnerByFilter;
-  }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter, data, filterData]);
+    return getstatusFilter;
+  }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter,statusFilter, data, filterData]);
 
   // Toggle popup visibility  by clicking on service id and i used useparam to get the id
 
@@ -451,9 +490,7 @@ const DataList = () => {
             <input type="search" value={searchQuery} placeholder='Search..'
               onChange={e => setSearchQuery(e.target.value)} autofocus required>
             </input>
-            <i classname="fa fa-search ">
-
-            </i>
+            <FaSearch  className='search-icon'/>
           </form>
           <div className='download'>
             <button onClick={downloadExcel}>
@@ -551,6 +588,28 @@ const DataList = () => {
                   className="sticky_head-horizontal-4"
                   rowSpan="2"
                 >
+                  
+                  <MultiSelectDropdown
+
+                    id="StatusFilter"
+                    title="Status"
+                    options={uniqueStatus}
+                    selectedValue={statusFilter}
+                    setSelectedValue={setStatusFilter}
+                  />
+                 
+                </th>
+                <th
+                  className="sticky_head-horizontal-4"
+                  rowSpan="2"
+                >
+                 Daily Cap
+                 
+                </th>
+                <th
+                  className="sticky_head-horizontal-4"
+                  rowSpan="2"
+                >
                   Total Pg
                   <button
                     onClick={() => handleSort('numSort', 'pgCount', 'asc')}
@@ -586,6 +645,14 @@ const DataList = () => {
                   >
                     <i className="fas fa-arrow-down"></i>
                   </button>
+                </th>
+
+
+                <th
+                  className="sticky_head-horizontal-5"
+                  rowSpan="2"
+                >
+                  Status
                 </th>
                 <th className='sticky_head_horizontal-6' rowSpan={2}>
                   Action
@@ -661,6 +728,8 @@ const DataList = () => {
                       <td>{info?.servicename || '-'}</td>
                       <td>{info?.partner || '-'}</td>
                       <td>{info?.service_partner || '-'}</td>
+                      <td>{info.status || "None"}</td>
+                      <td>{info.dailycap || "None"}</td>
                       <td className="sticky-4">
                         {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
                       </td>
@@ -671,13 +740,28 @@ const DataList = () => {
                         <div className='dropdown'>
                           <button className='dropbtn'><i className="fa fa-tasks"></i></button>
                           <div className='dropdown-content'>
-                            <a href={`/graph/${serviceId}`} target="_blank" rel="noopener noreferrer" className='model'>
+                            {/* <a href={`/graph/${serviceId}`}rel="noopener noreferrer" className='model'>
                               <i className="fa-solid fa-chart-line"></i>
                               Graph
-                            </a>
+                            </a> */}
+                         <button onClick={() => openModal(serviceId)}>     <i className="fa-solid fa-chart-line"></i>
+                          Graph</button>
+
                             <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
                               <i className="fa-solid fa-file-circle-plus"></i>  Logs
                             </Link>
+
+                        {/* show this button if user mail is support  */}
+                        {
+                          checkemail()==="support@globocom.info" ?  <button className='toggle-button' onClick={() => alert('This feature is not available yet')}>
+                          {/* Toggle button for active/inactive */}
+                          {status === 1
+                            ?<FaToggleOn className='toggle-on'/>
+                            :<FaToggleOff className='toggle'/>}
+                        </button> :""
+                        }
+                       
+                          
 
                           </div>
                         </div>
@@ -732,13 +816,20 @@ const DataList = () => {
           </table>
 
         </div>
-
+    
       </div>
-
+      {isModalOpen && (
+        <GraphData
+          isOpen={isModalOpen} 
+          onClose={closeModal} 
+          serviceId={selectedServiceId}  // Pass the selected service ID to the Modal
+        />
+      )}
 
     </>
-
+ 
   );
+  
 };
 
 export default DataList;

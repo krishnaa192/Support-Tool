@@ -5,7 +5,7 @@ import '../css/style.css';
 import '../css/header.css';
 import { processDataByServiceId } from '../utils';
 import { useNavigate } from 'react-router-dom'
-
+import { FaSignOutAlt } from "react-icons/fa";
 import ApiRequest from '../APi';
 import Loading from '../components/Loading';
 
@@ -155,7 +155,7 @@ const Header = () => {
                 ))}
                 <div className='tabs'>
               <button className='logout' onClick={handleLogout}>
-              <i classname="fa fa-sign-out" aria-hidden="true"></i></button>  
+              <FaSignOutAlt /></button>  
                 </div>
               </div>
              

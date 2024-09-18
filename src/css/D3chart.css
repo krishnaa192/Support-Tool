@@ -1,6 +1,7 @@
 /* Existing styles */
 .graph-data {
   color: black;
+  display: flex;
   padding: 20px;
   background-color: #6170b6;
   border-radius: 8px;
@@ -11,7 +12,7 @@
 
 .graph-data h2 {
   font-size: 24px;
-  margin-left: 50%;
+
 }
 
 .data-card {

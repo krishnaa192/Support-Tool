@@ -7,8 +7,13 @@ import Login from './Page/Login';
 
 
 const ProtectedRoute = ({ element }) => {
-  const isLoggedIn = sessionStorage.getItem('userEmail'); // Check if the user is logged in
-
+  // Check if the user is logged in
+  const sessionData = sessionStorage.getItem("Requested Data");
+  let isLoggedIn = false;
+  if (sessionData) {
+    const data = JSON.parse(sessionData);
+    isLoggedIn = data.email ? true : false;
+  }
   // If logged in, render the passed component, otherwise redirect to login
   return isLoggedIn ? element : <Navigate to="/login" />;
 };
@@ -19,7 +24,7 @@ function App() {
       <Routes>
         {/* Protect the header route */}
         <Route path="/" element={<ProtectedRoute element={<Header />} />} />
-        <Route path="/graph/:serviceId" element={<ProtectedRoute element={<GraphData />} />} />
+    
         <Route path="/login" element={<Login />} />
       </Routes>
     </Router>

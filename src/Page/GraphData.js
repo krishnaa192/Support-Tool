@@ -4,12 +4,15 @@ import D3Chart from '../Graph/Graph';
 import { processDataByServiceId } from '../utils';
 import ApiRequest from '../APi';
 import '../css/D3chart.css';
+import '../css/Modal.css'
 import Loading from '../components/Loading';
 
 
 
-const GraphData = () => {
-  const { serviceId } = useParams(); // Extract serviceId from route parameters
+const GraphData = ({ isOpen, onClose, serviceId}) => {
+ 
+ // Extract serviceId from route parameters
+
   const [data, setData] = useState({});
   const [selectedData, setSelectedData] = useState(null);
 
@@ -56,12 +59,15 @@ const GraphData = () => {
   if (!selectedData) {
     return <Loading />;
   }
-
+  if (!isOpen) return null;
 
   return (
+    <div className="modal-overlay">
+      <div className="modal-content">
     <div className='graph-data'>
     
       <h2>PVS Graph</h2>
+      <button onClick={onClose}>Close Modal</button>
       <div className='data-card'>
         {selectedData && (
           <ul>
@@ -98,6 +104,8 @@ const GraphData = () => {
         </ul>
       </div>
       </div>
+    </div>
+    </div>
     </div>
   );
 };
