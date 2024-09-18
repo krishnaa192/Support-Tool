@@ -1,0 +1,7 @@
+{
+    "remote.localPortHost": "localhost",
+    "boot-java.remote-apps": [
+
+    ],
+    "liveServer.settings.useLocalIp": true
+}

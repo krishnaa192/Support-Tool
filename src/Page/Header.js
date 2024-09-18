@@ -124,8 +124,8 @@ const Header = () => {
   }
   const handleLogout = () => {
     // Clear session storage
-    sessionStorage.removeItem('userEmail');
-    sessionStorage.removeItem('userId'); // If you have other user data stored, clear that too
+    sessionStorage.removeItem('Requested Data');
+   // If you have other user data stored, clear that too
 
     // Redirect to the login page
     navigate('/login');

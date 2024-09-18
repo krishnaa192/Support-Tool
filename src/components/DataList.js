@@ -30,13 +30,13 @@ const DataList = () => {
   const [numSort, setNumSort] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [servicePartnerFilter, setServicePartnerFilter] = useState('all');
-  const [statusFilter,setStatusFilter]=useState('all')
+  const [statusFilter, setStatusFilter] = useState('all');
   const [adPartnerFilter, setAdPartnerFilter] = useState('all');
   const [territoryFilter, setTerritoryFilter] = useState('all');
   const [operatorFilter, setOperatorFilter] = useState('all');
   const [serviceNameFilter, setserviceNameFilter] = useState('all')
   const [billerNameFilter, setBillerNameFilter] = useState('all');
-const [status, setStatus] = useState(1);
+  const [status, setStatus] = useState('');
 
 
   const serviceId = useRef(null);
@@ -66,8 +66,10 @@ const [status, setStatus] = useState(1);
         } = item;
         if (!acc[app_serviceid]) {
           acc[app_serviceid] = {
-            info: { territory, servicename, operator, partner, billername, service_partner,  status,
-              dailycap },
+            info: {
+              territory, servicename, operator, partner, billername, service_partner, status,
+              dailycap
+            },
             hours: Array.from({ length: 24 }, () => ({
               pingenCount: 0,
               pingenCountSuccess: 0,
@@ -170,12 +172,12 @@ const [status, setStatus] = useState(1);
   const uniqueServiceName = useMemo(() => {
     const serviceName = new Set(Object.values(data).map(item => item.info.servicename));
     return Array.from(serviceName);
-    
   }, [data]);
-  const uniqueStatus=useMemo(()=>{
-    const statusName=new Set(Object.values(data).map(item => item.info.status))
+
+  const uniqueStatus = useMemo(() => {
+    const statusName = new Set(Object.values(data).map(item => item.info.status))
     return Array.from(statusName)
-  },[data]);
+  }, [data]);
 
   const filterData = useCallback((items, filter, field) => {
     if (filter === 'all') return items; // No filtering if 'all' is selected
@@ -185,7 +187,7 @@ const [status, setStatus] = useState(1);
       return fieldValue && filters.includes(fieldValue);
     });
   }, [data]);
-  ;
+  
 
   const getColorClass = (successCount, totalCount) => {
     const ratio = totalCount === 0 ? 0 : successCount / totalCount;
@@ -306,8 +308,9 @@ const [status, setStatus] = useState(1);
         (info?.operator || '').toLowerCase().includes(query) ||
         (info?.partner || '').toLowerCase().includes(query) ||
         (info?.billername || '').toLowerCase().includes(query) ||
-        (info?.service_partner || '').toLowerCase().includes(query)||
-        (info?.status || '').toLowerCase().includes(query)
+        (info?.service_partner || '').toLowerCase().includes(query) ||
+        (info?.status || '').toLowerCase().includes(query)||
+        (info?.dailycap|| '').toLowerCase().includes(query)
 
       );
     });
@@ -318,10 +321,10 @@ const [status, setStatus] = useState(1);
     const serviceNameByFilter = filterData(operatorByFilter, serviceNameFilter, 'servicename');
     const billerNameByFilter = filterData(serviceNameByFilter, billerNameFilter, 'billername');
     const partnerByFilter = filterData(billerNameByFilter, adPartnerFilter, 'partner');
-    const getstatusFilter=filterData(partnerByFilter,statusFilter,"Status")
+    const getstatusFilter = filterData(partnerByFilter, statusFilter, "status");
 
     return getstatusFilter;
-  }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter,statusFilter, data, filterData]);
+  }, [sortedServiceIds, searchQuery, servicePartnerFilter, territoryFilter, operatorFilter, serviceNameFilter, billerNameFilter, adPartnerFilter, statusFilter, data, filterData]);
 
   // Toggle popup visibility  by clicking on service id and i used useparam to get the id
 
@@ -361,13 +364,13 @@ const [status, setStatus] = useState(1);
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
 
-    const toggleStatus = () => {
-      const confirmChange = window.confirm(` Are you sure you want to change the status to ${status ? "Inactive" : "Active"}?`);
-      if (confirmChange) {
-        setStatus(!status); // Toggle between true (active) and false (inactive)
-      }
-    };
- 
+  const toggleStatus = () => {
+    const confirmChange = window.confirm(` Are you sure you want to change the status to ${status ? "Inactive" : "Active"}?`);
+    if (confirmChange) {
+      setStatus(!status); // Toggle between true (active) and false (inactive)
+    }
+  };
+
   // Function to count services with no traffic in the last 2 hours
   const countNoTrafficServices = useCallback(() => {
     const twoHoursAgo = (getCurrentHour() - 2 + 24) % 24;
@@ -392,7 +395,12 @@ const [status, setStatus] = useState(1);
     }).length;
   }, [filteredServiceIds, data, getCurrentHour]);
 
-
+  const countInactiveServices = () => {
+    return filteredServiceIds.filter(id => {
+      const service = data[id];
+      return service && service.info.status === "INACTIVE";
+    }).length;
+  };
   const totalService = countActiveServices() + countNoTrafficServices()
 
   const downloadExcel = () => {
@@ -409,7 +417,7 @@ const [status, setStatus] = useState(1);
     // Define headers based on your example format
     const metadataHeaders = [
       'Territory', 'Operator', 'APP_SERVICEID', 'Biller Name', 'Service Name', 'Ad Partner',
-      'Service Partner'
+      'Service Partner','Status','Daily Cap'
     ];
 
     // Dynamic hour headers based on the number of hours in the data
@@ -440,7 +448,9 @@ const [status, setStatus] = useState(1);
         info.billername,
         info.servicename,
         info.partner,
-        info.service_partner
+        info.service_partner,
+        info.status,
+        info.dailycap
       ];
 
       // Add hour data to the metadata row
@@ -470,7 +480,7 @@ const [status, setStatus] = useState(1);
 
 
   return (
-
+<>
     <div className="custom-search-col">
       <div className="control">
 
@@ -484,7 +494,7 @@ const [status, setStatus] = useState(1);
             <p>Active </p>
           </div>
           <div className="info-box reds">
-            <h2>0</h2>
+            <h2>{countInactiveServices()|0}</h2>
             <p>Deactive</p>
           </div>
           <div className="info-box oranges">
@@ -497,7 +507,7 @@ const [status, setStatus] = useState(1);
             <input type="search" value={searchQuery} placeholder='Search..'
               onChange={e => setSearchQuery(e.target.value)} autofocus required>
             </input>
-            <FaSearch  className='search-icon'/>
+            <FaSearch className='search-icon' />
           </form>
           <div className='download'>
             <button onClick={downloadExcel}>
@@ -584,117 +594,117 @@ const [status, setStatus] = useState(1);
 
                 <MultiSelectDropdown
 
-                    id="service-partner-filter"
-                    title="Service Partner"
-                    options={uniqueServicePartner}
-                    selectedValue={servicePartnerFilter}
-                    setSelectedValue={setServicePartnerFilter}
-                  />
-                </th>
-                <th
-                  className="sticky_head-horizontal-4"
-                  rowSpan="2"
-                >
-                  
-                  <MultiSelectDropdown
+                  id="service-partner-filter"
+                  title="Service Partner"
+                  options={uniqueServicePartner}
+                  selectedValue={servicePartnerFilter}
+                  setSelectedValue={setServicePartnerFilter}
+                />
+              </th>
+              <th
+                className="sticky_head-horizontal-4"
+                rowSpan="2"
+              >
 
-                    id="StatusFilter"
-                    title="Status"
-                    options={uniqueStatus}
-                    selectedValue={statusFilter}
-                    setSelectedValue={setStatusFilter}
-                  />
-                 
-                </th>
-                <th
-                  className="sticky_head-horizontal-4"
-                  rowSpan="2"
+                <MultiSelectDropdown
+
+                  id="StatusFilter"
+                  title="Status"
+                  options={uniqueStatus}
+                  selectedValue={statusFilter}
+                  setSelectedValue={setStatusFilter}
+                />
+
+              </th>
+              <th
+                className="sticky_head-horizontal-4"
+                rowSpan="2"
+              >
+                Daily Cap
+
+              </th>
+              <th
+                className="sticky_head-horizontal-4"
+                rowSpan="2"
+              >
+                Total Pg
+                <button
+                  onClick={() => handleSort('numSort', 'pgCount', 'asc')}
+                  className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
+                  aria-label="Sort ascending"
                 >
-                 Daily Cap
-                 
-                </th>
-                <th
-                  className="sticky_head-horizontal-4"
-                  rowSpan="2"
+                  <i className="fas fa-arrow-up"></i>
+                </button>
+                <button
+                  onClick={() => handleSort('numSort', 'pgCount', 'desc')}
+                  className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
+                  aria-label="Sort descending"
                 >
-                  Total Pg
-                  <button
-                    onClick={() => handleSort('numSort', 'pgCount', 'asc')}
-                    className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'asc' ? 'active' : ''}`}
-                    aria-label="Sort ascending"
-                  >
-                    <i className="fas fa-arrow-up"></i>
-                  </button>
-                  <button
-                    onClick={() => handleSort('numSort', 'pgCount', 'desc')}
-                    className={`sort-button ${numSort.key === 'pgCount' && numSort.direction === 'desc' ? 'active' : ''}`}
-                    aria-label="Sort descending"
-                  >
-                    <i className="fas fa-arrow-down"></i>
-                  </button>
-                </th>
-                <th
-                  className="sticky_head-horizontal-5"
-                  rowSpan="2"
+                  <i className="fas fa-arrow-down"></i>
+                </button>
+              </th>
+              <th
+                className="sticky_head-horizontal-5"
+                rowSpan="2"
+              >
+                Total Pv
+                <button
+                  onClick={() => handleSort('numSort', 'pvCount', 'asc')}
+                  className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
+                  aria-label="Sort ascending"
                 >
-                  Total Pv
-                  <button
-                    onClick={() => handleSort('numSort', 'pvCount', 'asc')}
-                    className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'asc' ? 'active' : ''}`}
-                    aria-label="Sort ascending"
-                  >
-                    <i className="fas fa-arrow-up"></i>
-                  </button>
-                  <button
-                    onClick={() => handleSort('numSort', 'pvCount', 'desc')}
-                    className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
-                    aria-label="Sort descending"
-                  >
-                    <i className="fas fa-arrow-down"></i>
-                  </button>
-                </th>
+                  <i className="fas fa-arrow-up"></i>
+                </button>
+                <button
+                  onClick={() => handleSort('numSort', 'pvCount', 'desc')}
+                  className={`sort-button ${numSort.key === 'pvCount' && numSort.direction === 'desc' ? 'active' : ''}`}
+                  aria-label="Sort descending"
+                >
+                  <i className="fas fa-arrow-down"></i>
+                </button>
+              </th>
 
 
-                <th
-                  className="sticky_head-horizontal-5"
-                  rowSpan="2"
-                >
-                  Status
+              <th
+                className="sticky_head-horizontal-5"
+                rowSpan="2"
+              >
+                Status
+              </th>
+              <th className='sticky_head_horizontal-6' rowSpan={2}>
+                Action
+              </th>
+              {hours.map((hour, index) => (
+                <th className="sticky_head" key={index} colSpan="2">
+                  {hour >= 0 && hour < 12
+                    ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
+                    : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
                 </th>
-                <th className='sticky_head_horizontal-6' rowSpan={2}>
-                  Action
-                </th>
-                {hours.map((hour, index) => (
-                  <th className="sticky_head" key={index} colSpan="2">
-                    {hour >= 0 && hour < 12
-                      ? `${hour % 12 === 0 ? 12 : hour % 12} AM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} AM`
-                      : `${hour % 12 === 0 ? 12 : hour % 12} PM - ${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12} PM`}
+              ))}
+            </tr>
+            <tr className="hrs">
+              {hours.map((hour, index) => (
+                <React.Fragment key={index}>
+                  <th>
+                    <span className="pg">PG</span>
+                    <span className="pgs">PGS</span>
+                    <div className="sort-buttons">
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
+                        aria-label="Sort ascending"
+                      >
+                        <i className="fas fa-arrow-up"></i>
+                      </button>
+                      <button
+                        onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
+                        className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
+                        aria-label="Sort descending"
+                      >
+                        <i className="fas fa-arrow-down"></i>
+                      </button>
+                    </div>
                   </th>
-                ))}
-              </tr>
-              <tr className="hrs">
-                {hours.map((hour, index) => (
-                  <React.Fragment key={index}>
-                    <th>
-                      <span className="pg">PG</span>
-                      <span className="pgs">PGS</span>
-                      <div className="sort-buttons">
-                        <button
-                          onClick={() => handleSort('sortConfig', 'pg', 'asc', hour)}
-                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'asc' ? 'active' : ''}`}
-                          aria-label="Sort ascending"
-                        >
-                          <i className="fas fa-arrow-up"></i>
-                        </button>
-                        <button
-                          onClick={() => handleSort('sortConfig', 'pg', 'desc', hour)}
-                          className={`sort-button ${sortConfig.hour === hour && sortConfig.key === 'pg' && sortConfig.direction === 'desc' ? 'active' : ''}`}
-                          aria-label="Sort descending"
-                        >
-                          <i className="fas fa-arrow-down"></i>
-                        </button>
-                      </div>
-                    </th>
 
                   <th>
                     <span className="pg">PV</span>
@@ -722,73 +732,73 @@ const [status, setStatus] = useState(1);
 
             {filteredServiceIds.length > 0 ? (
 
-                filteredServiceIds.map(serviceId => {
-                  const { info, hours: serviceHours } = data[serviceId] || {};
-                  return (
-                    <tr key={serviceId}>
-                      <td className="sticky-1">{info?.territory || '-'}</td>
-                      <td>{info?.operator || '-'}</td>
-                      <td className="service-id-cell">
-                        {serviceId}
-                      </td>
-                      <td className="sticky-3">{info?.billername || '-'}</td>
-                      <td>{info?.servicename || '-'}</td>
-                      <td>{info?.partner || '-'}</td>
-                      <td>{info?.service_partner || '-'}</td>
-                      <td>{info.status || "None"}</td>
-                      <td>{info.dailycap || "None"}</td>
-                      <td className="sticky-4">
-                        {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
-                      </td>
-                      <td className="sticky-5">
-                        {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
-                      </td>
-                      <td className='sticky-6'>
-                        <div className='dropdown'>
-                          <button className='dropbtn'><i className="fa fa-tasks"></i></button>
-                          <div className='dropdown-content'>
-                            {/* <a href={`/graph/${serviceId}`}rel="noopener noreferrer" className='model'>
+              filteredServiceIds.map(serviceId => {
+                const { info, hours: serviceHours } = data[serviceId] || {};
+                return (
+                  <tr key={serviceId}>
+                    <td className="sticky-1">{info?.territory || '-'}</td>
+                    <td>{info?.operator || '-'}</td>
+                    <td className="service-id-cell">
+                      {serviceId}
+                    </td>
+                    <td className="sticky-3">{info?.billername || '-'}</td>
+                    <td>{info?.servicename || '-'}</td>
+                    <td>{info?.partner || '-'}</td>
+                    <td>{info?.service_partner || '-'}</td>
+                    <td>{info.status || "None"}</td>
+                    <td>{info.dailycap || "None"}</td>
+                    <td className="sticky-4">
+                      {getPGPVCount(serviceId, getCutrrentHour, 'pg')}
+                    </td>
+                    <td className="sticky-5">
+                      {getPGPVCount(serviceId, getCutrrentHour, 'pv')}
+                    </td>
+                    <td className='sticky-6'>
+                      <div className='dropdown'>
+                        <button className='dropbtn'><i className="fa fa-tasks"></i></button>
+                        <div className='dropdown-content'>
+                          {/* <a href={`/graph/${serviceId}`}rel="noopener noreferrer" className='model'>
                               <i className="fa-solid fa-chart-line"></i>
                               Graph
                             </a> */}
-                         <button onClick={() => openModal(serviceId)}>     <i className="fa-solid fa-chart-line"></i>
-                          Graph</button>
+                          <button onClick={() => openModal(serviceId)}>     <i className="fa-solid fa-chart-line"></i>
+                            Graph</button>
 
-                            <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
-                              <i className="fa-solid fa-file-circle-plus"></i>  Logs
-                            </Link>
+                          <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
+                            <i className="fa-solid fa-file-circle-plus"></i>  Logs
+                          </Link>
 
-                        {/* show this button if user mail is support  */}
-                        {
-                          checkemail()==="support@globocom.info" ?  <button className='toggle-button' onClick={() => alert('This feature is not available yet')}>
-                          {/* Toggle button for active/inactive */}
-                          {status === 1
-                            ?<FaToggleOn className='toggle-on'/>
-                            :<FaToggleOff className='toggle'/>}
-                        </button> :""
-                        }
-                       
-                          
+                          {/* show this button if user mail is support  */}
+                          {
+                            checkemail() === "support@globocom.info" ? <button className='toggle-button' onClick={() => alert('This feature is not available yet')}>
+                              {/* Toggle button for active/inactive */}
+                              {status === 1
+                                ? <FaToggleOn className='toggle-on' />
+                                : <FaToggleOff className='toggle' />}
+                            </button> : ""
+                          }
 
-                          </div>
+
+
                         </div>
-                      </td>
-                      {hours.map((hour, index) => {
-                        const hourData = serviceHours[hour] || {};
-                        return (
-                          <React.Fragment key={index}>
-                            <td
-                              className={`text-center ${getColorClass(
-                                hourData.pingenCountSuccess,
-                                hourData.pingenCount
-                              )}`}
-                            >
-                              <div className={`pg ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
-                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pingenCount}
-                              </div>
-                              <div className={`pgs ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
-                                {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? '-' : hourData.pingenCountSuccess}
-                              </div>
+                      </div>
+                    </td>
+                    {hours.map((hour, index) => {
+                      const hourData = serviceHours[hour] || {};
+                      return (
+                        <React.Fragment key={index}>
+                          <td
+                            className={`text-center ${getColorClass(
+                              hourData.pingenCountSuccess,
+                              hourData.pingenCount
+                            )}`}
+                          >
+                            <div className={`pg ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                              {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? <div className='blank'>-</div> : hourData.pingenCount}
+                            </div>
+                            <div className={`pgs ${hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? 'grey-bg' : ''}`}>
+                              {hourData.pingenCount === 0 && hourData.pingenCountSuccess === 0 ? '-' : hourData.pingenCountSuccess}
+                            </div>
 
                           </td>
                           <td
@@ -821,17 +831,19 @@ const [status, setStatus] = useState(1);
             )}
           </tbody>
         </table>
-
-        </div>
-    
       </div>
-      {isModalOpen && (
-        <GraphData
-          isOpen={isModalOpen} 
-          onClose={closeModal} 
-          serviceId={selectedServiceId}  // Pass the selected service ID to the Modal
-        />
-      )}
+    </div>
+    
+
+      {
+    isModalOpen && (
+      <GraphData
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        serviceId={selectedServiceId}  // Pass the selected service ID to the Modal
+      />
+    )
+  }
 
     </>
  

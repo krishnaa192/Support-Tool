@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+
 import D3Chart from '../Graph/Graph';
 import { processDataByServiceId } from '../utils';
 import ApiRequest from '../APi';
 import '../css/D3chart.css';
 import '../css/Modal.css'
 import Loading from '../components/Loading';
+import { FaWindowClose } from "react-icons/fa";
 
 
 
@@ -64,10 +65,10 @@ const GraphData = ({ isOpen, onClose, serviceId}) => {
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-    <div className='graph-data'>
+      <button onClick={onClose}><FaWindowClose  className='exit'/></button>
     
-      <h2>PVS Graph</h2>
-      <button onClick={onClose}>Close Modal</button>
+    <div className='graph-data'>
+    <h2>PVS Graph</h2>
       <div className='data-card'>
         {selectedData && (
           <ul>
@@ -83,17 +84,16 @@ const GraphData = ({ isOpen, onClose, serviceId}) => {
       </div>
     
 
-      <div className='graph-container'>
      
-      <div className='graph-stats'>
+     
+      <div className='graph'>
         {selectedData && chartData.length > 0 && (
           <D3Chart
             data={chartData}
             title={`PVS for Service ID ${serviceId}`}
           />
         )}
-      </div>
-      <div className='data-stats'>
+         <div className='data-stats'>
         
         <ul>
           <li>Total PG: {pgCount}</li>
@@ -104,6 +104,8 @@ const GraphData = ({ isOpen, onClose, serviceId}) => {
         </ul>
       </div>
       </div>
+     
+     
     </div>
     </div>
     </div>

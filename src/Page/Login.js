@@ -6,11 +6,9 @@ import {
   MDBContainer,
   MDBCard,
   MDBCardBody,
-  MDBCardImage,
   MDBRow,
   MDBCol,
-  MDBIcon,
-  MDBInput
+  MDBInput,
 } from 'mdb-react-ui-kit';
 import "../css/Login.css"; // Custom CSS for styling
 
@@ -42,37 +40,47 @@ const Login = () => {
     <MDBContainer className="login-container my-5">
       <MDBCard className="login-card shadow-lg">
         <MDBRow className="g-0">
-
           <MDBCol md="6">
             <MDBCardBody className="d-flex flex-column justify-content-center">
               <div className="d-flex flex-row mt-2 mb-4">
-            <img  alt="logo" src="logo0.png"/>
-                <span className="h1 fw-bold mb-0">Globocom Support </span>
+                <img alt="logo" src="logo0.png" />
+                <span className="h1 fw-bold mb-0">Globocom Support</span>
               </div>
-
-<div className="login-form">
-              <form onSubmit={login}>
-                <MDBInput wrapperClass="mb-4" label="Email address" id="email"  placeholder="Email or Username" type="email" size="lg" value={email} onChange={(e) => setEmail(e.target.value)} className="styled-input" />
-                <MDBInput wrapperClass="mb-4" label="Password" id="password" placeholder="password" type="password" size="lg" value={password} onChange={(e) => setPassword(e.target.value)} className="styled-input" />
-
-                <MDBBtn className="mb-4 px-5 login-btn" color="dark" size="lg" type="submit">Login</MDBBtn>
-              </form>
+              <div className="login-form">
+                <form onSubmit={login}>
+                  <MDBInput 
+                    wrapperClass="mb-4" 
+                
+                    id="email" 
+                    placeholder="Email or Username" 
+                    type="email" 
+                    size="lg" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    className="styled-input" 
+                  />
+                  <MDBInput 
+                    wrapperClass="mb-4" 
+                 
+                    id="password" 
+                    placeholder="password" 
+                    type="password" 
+                    size="lg" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    className="styled-input" 
+                  />
+                  <MDBBtn className="mb-4 px-5 login-btn" color="dark" size="lg" type="submit">
+                    Login
+                  </MDBBtn>
+                </form>
               </div>
-              <button className="button login__submit" type="submit">
-                <span className="button__text">Log In</span>
-                <i className="button__icon fas fa-chevron-right"></i>
-              </button>
-            </form>
-          </div>
-          <div className="screen__background">
-            <span className="screen__background__shape screen__background__shape4"></span>
-            <span className="screen__background__shape screen__background__shape3"></span>
-            <span className="screen__background__shape screen__background__shape2"></span>
-            <span className="screen__background__shape screen__background__shape1"></span>
-          </div>
-        </div>
-      </div>
-    </>
+            </MDBCardBody>
+          </MDBCol>
+          {/* You can add your image or any content for the second column here */}
+        </MDBRow>
+      </MDBCard>
+    </MDBContainer>
   );
 };
 
