@@ -1,4 +1,4 @@
-import ApiRequest from './APi'; // Ensure the correct import path for ApiRequest
+import {ApiRequest} from './APi'; // Ensure the correct import path for ApiRequest
 
 export const fetchDataAndCount = async () => {
     try {
@@ -18,13 +18,12 @@ export const fetchDataAndCount = async () => {
         };
     }
 };
-
 export const processDataByServiceId = (data) => {
     const processedData = {};
 
     // Ensure data is an array before processing
     if (!Array.isArray(data)) {
-        console.error("Expected data to be an array but received:", data);
+
         return processedData;
     }
 
@@ -83,6 +82,7 @@ export const processDataByServiceId = (data) => {
 
 // Fetch data and process it
 fetchDataAndCount().then(({ data }) => {
+    // eslint-disable-next-line
     const processedData = processDataByServiceId(data);
  
 }).catch(error => {

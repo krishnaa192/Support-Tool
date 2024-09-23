@@ -15,7 +15,6 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
     // Sort options in ascending order
     const sorted = [...options].sort();
     setSortedOptions(sorted);
-
     // Filter options based on search query
     const filtered = sorted.filter(option => {
       if (typeof option === 'string') {
@@ -59,23 +58,16 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
     setSelectedValue(tempSelectedOptions.join(','))
     setIsApplied(true); // Mark as applied
   };
-
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
     //when all query result is chooseed it chose all option
     if (event.target.value === '') {
       setTempSelectedOptions(sortedOptions);
     }
-    
-    
   };
-
   const isSelected = (value) => tempSelectedOptions.includes(value);
-
   const isAllSelected = () => tempSelectedOptions.length === sortedOptions.length && sortedOptions.length > 0;
   //after applyin filter on pressing apply button but when from unchecking all option checking all option again without usign apply it should not show filter icon
-
-
 
   return (
     <div className="multi-select-dropdown">
@@ -121,7 +113,6 @@ const MultiSelectDropdown = ({ id, title, options = [], selectedValue = '', setS
     </div>
   );
 };
-
 MultiSelectDropdown.propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,

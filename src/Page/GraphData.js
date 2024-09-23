@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import D3Chart from '../Graph/Graph';
 import { processDataByServiceId } from '../utils';
-import ApiRequest from '../APi';
+import {ApiRequest} from '../APi';
 import '../css/D3chart.css';
 import '../css/Modal.css'
 import Loading from '../components/Loading';

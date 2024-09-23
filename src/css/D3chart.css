@@ -154,7 +154,9 @@ ul {
 }
 .graph{
   display: flex;
+  background-color: white;
 }
 .exit{
   font-size: 20px;
+  background-color: none;
 }

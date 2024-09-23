@@ -5,8 +5,7 @@ const CACHE_DURATION = 15 * 60 * 1000; // Cache duration (e.g., 15 minutes)
 
 const ApiRequest = async () => {
     const now = Date.now();
-    const api_url='https://wap.matrixads.in/mglobopay/getSupportMonitorData'
-
+    const api_url=process.env.REACT_APP_API_URL
     // Check if cached data is still valid
     if (!dataPromise || (now - lastFetchTime > CACHE_DURATION)) {
         dataPromise = axios.get(api_url, {
@@ -26,12 +25,8 @@ const ApiRequest = async () => {
             throw error;
         });
     }
-    
-
     return dataPromise;
 };
-
-
 
 // Function to manually refresh data
 export const refreshApiRequest = () => {
@@ -39,5 +34,5 @@ export const refreshApiRequest = () => {
     return ApiRequest();
 };
 
-export default ApiRequest;
+export{ApiRequest};
 

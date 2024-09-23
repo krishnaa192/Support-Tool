@@ -58,6 +58,7 @@ const Login = () => {
                     value={email} 
                     onChange={(e) => setEmail(e.target.value)} 
                     className="styled-input" 
+                    autoFocus
                   />
                   <MDBInput 
                     wrapperClass="mb-4" 
@@ -69,6 +70,7 @@ const Login = () => {
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)} 
                     className="styled-input" 
+                    autoFocus
                   />
                   <MDBBtn className="mb-4 px-5 login-btn" color="dark" size="lg" type="submit">
                     Login

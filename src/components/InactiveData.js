@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import ApiRequest from '../APi'; // Ensure this path is correct
+import {ApiRequest} from '../APi'; // Ensure this path is correct
 import '../css/style.css';
 
 const InactiveData = () => {
@@ -16,7 +15,7 @@ const InactiveData = () => {
   const fetchData = useCallback(async () => {
    
       const result = await ApiRequest();
-      console.log("API Result_inactive:", result);
+   
 
       const inactiveData = {};
       result.forEach(item => {
@@ -166,9 +165,9 @@ const InactiveData = () => {
           <div className="filters">
           <form>
             <input type="search" value={searchQuery} placeholder='Search..'
-              onChange={e => setSearchQuery(e.target.value)} autofocus required>
+              onChange={e => setSearchQuery(e.target.value)} autoFocus required>
             </input>
-            <i classname="fa fa-search ">
+            <i className="fa fa-search ">
 
             </i>
           </form>
@@ -277,7 +276,7 @@ const InactiveData = () => {
           ) : (
             <tr>
               <td colSpan={7 + hours.length * 2} className="text-center">
-                No data matches your search criteria.
+                No data Found !
               </td>
             </tr>
           )}

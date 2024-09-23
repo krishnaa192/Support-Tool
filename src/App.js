@@ -1,8 +1,6 @@
 import React from 'react';
-
 import { BrowserRouter as Router, Route, Routes,Navigate } from 'react-router-dom';
 import Header from './Page/Header';
-import GraphData from './Page/GraphData';
 import Login from './Page/Login';
 
 
@@ -24,7 +22,6 @@ function App() {
       <Routes>
         {/* Protect the header route */}
         <Route path="/" element={<ProtectedRoute element={<Header />} />} />
-    
         <Route path="/login" element={<Login />} />
       </Routes>
     </Router>

@@ -6,7 +6,7 @@ import '../css/header.css';
 import { processDataByServiceId } from '../utils';
 import { useNavigate } from 'react-router-dom'
 import { FaSignOutAlt } from "react-icons/fa";
-import ApiRequest from '../APi';
+import {ApiRequest} from '../APi';
 import Loading from '../components/Loading';
 
 const Header = () => {
@@ -100,11 +100,12 @@ const Header = () => {
         const message = `App Service Id ${serviceId}\nPingenCount or PinverCount is 30 or more with 0 success count`;
         updateNotifications(serviceId, message);
         //add interval to trigger alert every 45 minutes
+        // eslint-disable-next-line
         const intervalId = setInterval(() => {
         window.alert(message);
-   }, 45*60*1000); // 45 minutes in milliseconds
+   }, 30*60*1000); // 45 minutes delays
       }
-    });
+    },[]);
   };
   // Set up interval to check alerts every 45 minutes
   useEffect(() => {
@@ -117,6 +118,7 @@ const Header = () => {
 
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
+    // eslint-disable-next-line
   }, [processdata]);
 
   if (loading) {
@@ -136,13 +138,13 @@ const Header = () => {
         <div className="table-one p-2">
           <div className="p-2">
             <div className="row">
-            <h3 className="head_black">
+            <div className="head_black">
                <img
           src="file.png" 
           alt=""
           className="logo"
         />
-        <h1 className="title">Globocom Support Monitoring</h1></h3>
+        <h1 className="title">Globocom Support Monitoring</h1></div>
               <div className="tabs">
                 {['all', 'inactive', 'notification'].map((tabName) => (
                   <button
