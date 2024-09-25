@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import '../css/D3chart.css';
 
-const D3Chart = ({ data, title }) => {
+const LinearChart = ({ data, title }) => {
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
 
@@ -111,7 +111,7 @@ const D3Chart = ({ data, title }) => {
       <svg
         ref={svgRef}
         width={800}
-        height={500}
+        height={400}
       >
       
        
@@ -124,4 +124,4 @@ const D3Chart = ({ data, title }) => {
   );
 };
 
-export default D3Chart;
+export default LinearChart;

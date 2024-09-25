@@ -56,6 +56,8 @@
 .data-card ul {
   list-style-type: none;
   padding: 0;
+  display: flex;
+  gap: 26px;
 }
 
 .data-card li {
@@ -155,8 +157,22 @@ ul {
 .graph{
   display: flex;
   background-color: white;
+  
+margin-bottom: 12px;
 }
 .exit{
   font-size: 20px;
   background-color: none;
+}
+
+
+
+.graph-cont h2{
+  color: black;
+margin-left: 82px;
+}
+
+.graph-cont{
+  border-radius: 10px;
+  background-color: white;
 }

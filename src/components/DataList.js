@@ -362,46 +362,46 @@ const DataList = () => {
   const totalService = countActiveServices() + countNoTrafficServices()
 
 
-  //Handling excel import
   const downloadExcel = () => {
-    //get all filtered data
+    // Get all filtered data
     const service = filteredServiceIds.reduce((acc, serviceId) => {
       acc[serviceId] = data[serviceId];
       return acc;
     }, {});
-    if (!service) return;
-
+    if (!Object.keys(service).length) return;  // Check if service is empty
+  
     // Create a new workbook and worksheet
     const wb = XLSX.utils.book_new();
-
+  
     // Define headers based on your example format
     const metadataHeaders = [
       'Territory', 'Operator', 'APP_SERVICEID', 'Biller Name', 'Service Name', 'Ad Partner',
       'Service Partner', 'Status', 'Daily Cap'
     ];
-
+  
     // Dynamic hour headers based on the number of hours in the data
     const hourHeaders = [];
     for (let i = 0; i < 24; i++) {
-      const startHour = (i + new Date().getHours()) % 24;
+      const startHour = i;
       const endHour = (startHour + 1) % 24;
       const startHourFormatted = startHour === 0 ? '12 AM' : startHour < 12 ? `${startHour} AM` : startHour === 12 ? '12 PM' : `${startHour - 12} PM`;
       const endHourFormatted = endHour === 0 ? '12 AM' : endHour < 12 ? `${endHour} AM` : endHour === 12 ? '12 PM' : `${endHour - 12} PM`;
       hourHeaders.push(`${startHourFormatted} - ${endHourFormatted}`);
     }
+  
     // Combine headers
     const headers = metadataHeaders.concat(hourHeaders);
-
+  
     // Create rows for metadata and data
     const wsData = [];
     wsData.push(headers);  // Add headers to the worksheet
-
+  
+    // Loop through each service and add its data
     Object.keys(service).forEach(serviceId => {
       const { info, hours } = service[serviceId];
-
+  
       // Metadata row
       const metadataRow = [
-
         info.territory,
         info.operator,
         serviceId,
@@ -412,25 +412,33 @@ const DataList = () => {
         info.status,
         info.dailycap
       ];
-
-      // Add hour data to the metadata row
+  
+      // Add hour data (pg-pgs-pv-pvs) to the metadata row
       for (let i = 0; i < 24; i++) {
-        const hourData = hours[i] || {};
-        // pg-pgs-pv-pvs format
-        metadataRow.push(`${hourData.pingenCount}- ${hourData.pingenCountSuccess} - ${hourData.pinverCount}- ${hourData.pinverCountSuccess}`);
+        const hourData = hours[i] || {}; // Ensure hours[i] exists
+        const pingenCount = hourData.pingenCount || 0;
+        const pingenCountSuccess = hourData.pingenCountSuccess || 0;
+        const pinverCount = hourData.pinverCount || 0;
+        const pinverCountSuccess = hourData.pinverCountSuccess || 0;
+        metadataRow.push(`${pingenCount} - ${pingenCountSuccess} - ${pinverCount} - ${pinverCountSuccess}`);
       }
-      wsData.push(metadataRow);
+  
+      wsData.push(metadataRow);  // Add metadata and hour data to wsData
     });
+  
     // Convert data array to a worksheet
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-    // Set column widths for better readability set auto width
+  
+    // Set column widths for better readability (auto-width)
     ws['!cols'] = headers.map(header => ({ wch: 15 }));
+  
     // Append worksheet to workbook
     XLSX.utils.book_append_sheet(wb, ws, 'Data');
+  
     // Write the workbook to a file
     XLSX.writeFile(wb, 'data.xlsx');
   };
-
+  
 
   return (
     <>
