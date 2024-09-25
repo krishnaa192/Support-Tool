@@ -2,46 +2,43 @@ import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import "../css/Barchart.css"; // Add CSS for styling
 
-const BarChart = () => {
+const BarChart = ({ data, width =800 }) => {
   const svgRef = useRef();
 
-
-  const data=[
-    
-  ]
   useEffect(() => {
     const margin = { top: 40, right: 30, bottom: 40, left: 50 };
-    const width = 800 - margin.left - margin.right;
+    const chartWidth = width - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
     const svg = d3
       .select(svgRef.current)
-      .attr("width", width + margin.left + margin.right)
+      .attr("width", width)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
     const x0 = d3
       .scaleBand()
-      .domain(data.map((d) => d.day))
-      .range([0, width])
-      .padding(0.2);
+      .domain(data.map((d) => d.date))
+      .range([0, chartWidth])
+      .padding(0); // Remove padding to make bars touch
 
     const x1 = d3
       .scaleBand()
-      .domain(["pg", "pv"])
-      .range([0, x0.bandwidth()])
-      .padding(0.05);
+      .domain(["pingenCount", "pinverCount"])
+      .range([0,63]) // Use the full bandwidth for each group
+      .padding(0); // Remove padding to make bars touch
 
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(data, (d) => Math.max(d.pg, d.pv))])
+      .domain([0, d3.max(data, (d) => Math.max(d.pingenCount, d.pinverCount))])
       .nice()
       .range([height, 0]);
 
-    const color = d3.scaleOrdinal().domain(["pg", "pv"]).range(["steelblue", "orange"]);
+    const color = d3.scaleOrdinal()
+      .domain(["pingenCount", "pinverCount"])
+      .range(["steelblue", "orange"]);
 
-    // Tooltip
     const tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
       .style("opacity", 0)
@@ -58,28 +55,35 @@ const BarChart = () => {
       .data(data)
       .enter()
       .append("g")
-      .attr("transform", (d) => `translate(${x0(d.day)},0)`)
+      .attr("transform", (d) => `translate(${x0(d.date)},0)`)
       .selectAll("rect")
-      .data((d) => ["pg", "pv"].map((key) => ({ key, value: d[key] })))
+      .data((d) => [
+        { key: "pingenCount", value: d.pingenCount },
+        { key: "pinverCount", value: d.pinverCount }
+      ])
       .enter()
       .append("rect")
       .attr("x", (d) => x1(d.key))
       .attr("y", (d) => y(d.value))
-      .attr("width", x1.bandwidth())
+      .attr("width", 30) // Set fixed width
       .attr("height", (d) => height - y(d.value))
       .attr("fill", (d) => color(d.key))
+      .style("stroke", "black") // Optional: Add stroke to rectangles
+      .style("stroke-width", 1) // Optional: Set stroke width
       .on("mouseover", (event, d) => {
-        tooltip
-          .transition()
-          .duration(200)
-          .style("opacity", 1);
-        tooltip
-          .html(`Value: ${d.value}`)
-          .style("left", event.pageX + "px")
-          .style("top", event.pageY - 28 + "px");
-      })
-      .on("mouseout", () => {
-        tooltip.transition().duration(500).style("opacity", 0);
+        tooltip.transition().duration(200).style("opacity", 1);
+        
+        const countType = d.key;
+        const item = data.find(item => 
+          countType === "pingenCount" ? item.pingenCount === d.value : item.pinverCount === d.value
+        );
+
+        tooltip.html(`
+          ${countType === "pingenCount" ? "PG" : "PV"}: ${d.value} <br />
+          ${countType === "pingenCount" ? "PGS" : "PVS"}: ${countType === "pingenCount" ? item.pingenCountSuccess : item.pinverCountSuccess}
+        `)
+        .style("left", event.pageX + "px")
+        .style("top", event.pageY - 28 + "px");
       });
 
     // X axis
@@ -93,12 +97,12 @@ const BarChart = () => {
       .attr("class", "y-axis")
       .call(d3.axisLeft(y));
 
-    // Cleanup function to avoid multiple SVG appends when re-rendering
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       d3.select(svgRef.current).selectAll("*").remove();
       tooltip.remove();
     };
-  }, [data]);
+  }, [data, width]);
 
   return <svg ref={svgRef}></svg>;
 };

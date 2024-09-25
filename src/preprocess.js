@@ -1,37 +1,38 @@
 const preprocess = (data) => {
-    const weeklydata = {};
+    const weeklyData = {};
     const currentDate = new Date();
     const currentHour = currentDate.getHours(); // Get current hour
 
     if (!Array.isArray(data)) {
         console.error("Data is not an array:", data);
-        return weeklydata;
+        return [];
     }
 
     data.forEach(item => {
         const {
-            appServiceId,    // Updated field name
+            appServiceId,
             territory,
-            serviceName,     // Updated field name
+            serviceName,
             operatorname,
             operatorid,
-            partnerName,     // Updated field name
+            partnerName,
             biller,
             service_owner,
             hrs,
-            pinGenReqCount,  // Updated field name
-            pinGenSucCount,  // Updated field name
-            pinVerReqCount,  // Updated field name
-            pinVerSucCount,  // Updated field name
-            actDate          // The date of the data entry
+            pinGenReqCount,
+            pinGenSucCount,
+            pinVerSucCount,
+            pinVerReqCount,
+            timestamp
         } = item;
 
         const hour = parseInt(hrs, 10); // Ensure hour is a number
 
         // Ensure the appServiceId entry exists
-        if (!weeklydata[appServiceId]) {
-            weeklydata[appServiceId] = {
+        if (!weeklyData[appServiceId]) {
+            weeklyData[appServiceId] = {
                 info: {
+                    appServiceId,
                     territory: territory || '',
                     servicename: serviceName || '',
                     operator: operatorname || '',
@@ -39,30 +40,43 @@ const preprocess = (data) => {
                     billername: biller || '',
                     operatorid: operatorid || '',
                     service_partner: service_owner || '',
-                    Datadate:actDate
+                    Datadate: new Date(timestamp).toDateString(), // Store only the date part
                 },
-                pingenCount: 0,
-                pingenCountSuccess: 0,
-                pinverCount: 0,
-                pinverCountSuccess: 0
+                dailyCounts: {} // Initialize dailyCounts as an object to hold daily entries
             };
         }
 
         // Get the date of the entry
-        const entryDate = new Date(actDate);
-        const isToday = currentDate.toDateString() === entryDate.toDateString();
+        const entryDate = new Date(timestamp).toDateString(); // Extract only the date part
+        const isToday = currentDate.toDateString() === entryDate;
 
         // Only sum the data for hours before the current hour if it is today's data
-        if (!isToday || (isToday && hour <= currentHour)) {
-            weeklydata[appServiceId].pingenCount += (pinGenReqCount || 0);
-            weeklydata[appServiceId].pingenCountSuccess += (pinGenSucCount || 0);
-            weeklydata[appServiceId].pinverCount += (pinVerReqCount || 0);
-            weeklydata[appServiceId].pinverCountSuccess += (pinVerSucCount || 0);
+        if (!isToday || hour < currentHour) {
+            // If the entry for that date does not exist, create it
+            if (!weeklyData[appServiceId].dailyCounts[entryDate]) {
+                weeklyData[appServiceId].dailyCounts[entryDate] = {
+                    entryDate,
+                    pinGenReqCount: 0,
+                    pinGenSucCount: 0,
+                    pinVerReqCount: 0,
+                    pinVerSucCount: 0
+                };
+            }
+
+            // Update the counts for that specific date
+            weeklyData[appServiceId].dailyCounts[entryDate].pinGenReqCount += (pinGenReqCount || 0);
+            weeklyData[appServiceId].dailyCounts[entryDate].pinGenSucCount += (pinGenSucCount || 0);
+            weeklyData[appServiceId].dailyCounts[entryDate].pinVerReqCount += (pinVerReqCount || 0);
+            weeklyData[appServiceId].dailyCounts[entryDate].pinVerSucCount += (pinVerSucCount || 0);
         }
     });
 
-    console.log("Processed Daily Data:", weeklydata);
-    return weeklydata;
+
+    // Convert the object to an array before returning
+    return Object.values(weeklyData).map(appData => ({
+        ...appData,
+        dailyCounts: Object.values(appData.dailyCounts) // Convert dailyCounts object to array
+    }));
 };
 
 export { preprocess };
