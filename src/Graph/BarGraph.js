@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
-import "../css/Barchart.css"; // Add CSS for styling
+import "../css/Barchart.css";
 
 const BarChart = ({ data, width =800 }) => {
   const svgRef = useRef();
@@ -21,13 +21,13 @@ const BarChart = ({ data, width =800 }) => {
       .scaleBand()
       .domain(data.map((d) => d.date))
       .range([0, chartWidth])
-      .padding(0); // Remove padding to make bars touch
+      .padding(0);
 
     const x1 = d3
       .scaleBand()
       .domain(["pingenCount", "pinverCount"])
-      .range([0,63]) // Use the full bandwidth for each group
-      .padding(0); // Remove padding to make bars touch
+      .range([0,63]) 
+      .padding(0); 
 
     const y = d3
       .scaleLinear()
