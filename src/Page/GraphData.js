@@ -13,7 +13,7 @@ const GraphData = ({ isOpen, onClose, serviceId }) => {
   const [data, setData] = useState({});
   const [weekly, setWeekly] = useState([]);
   const [selectedData, setSelectedData] = useState(null);
-
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -30,8 +30,10 @@ const GraphData = ({ isOpen, onClose, serviceId }) => {
         );
 
         setWeekly(Array.isArray(filteredWeeklyData) ? filteredWeeklyData : []);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setLoading(false);
       }
     };
 
@@ -43,7 +45,11 @@ const GraphData = ({ isOpen, onClose, serviceId }) => {
       setSelectedData(data[serviceId]);
     }
   }, [serviceId, data]);
+//loading
 
+if (loading) {
+  return <Loading />;
+}
   const getCurrentDate = new Date();
   const chartData = selectedData
     ? selectedData.hours.map((hour, index) => ({
@@ -118,36 +124,48 @@ const GraphData = ({ isOpen, onClose, serviceId }) => {
               </ul>
             </div>
           </div>
+{/* add condition that if barChartData exist for this  then render
+ */}
+{barChartData && barChartData.length > 0 ? (
+  <div className="graph-cont">
+    <h2>Weekly PG, PGS, PV, and PVS Data</h2>
+    <div className="graph">
+      <BarChart data={barChartData} />
+      <div className="data-table">
+        <table className="weekly-data-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>PG</th>
+              <th>PV</th>
+              <th>CR (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {barChartData.map((item, index) => (
+              <tr key={index}>
+                <td>{item.date}</td>
+                <td>{item.pingenCount}</td>
+                <td>{item.pinverCount}</td>
+                <td>{((item.pinverCount / item.pingenCount) * 100).toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="graph-cont">
+  <h2>Weekly PG, PGS, PV, and PVS Data</h2>
+  <div className="graph">
+      <h2>No data available for this service</h2>
+   </div>
+   </div>
+)}
 
-          <div className="graph-cont">
-            <h2>Weekly PG, PGS, PV, and PVS Data</h2>
-            <div className="graph">
-              <BarChart data={barChartData} />
-              <div className="data-table">
-                <table style={{ borderCollapse: 'collapse', width: '100%', marginTop: '20px' }}>
-                  <thead>
-                    <tr>
-                      <th>Day</th>
-                      <th>PG</th>
-                      <th>PV</th>
-                      <th>CR (%)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {barChartData.map((item, index) => (
-                      <tr key={index}>
-                        <td>{item.date}</td>
-                        <td>{item.pingenCount}</td>
-                        <td>{item.pinverCount}</td>
-                        <td>{item.cr}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
         </div>
+                
       </div>
     </div>
   );
