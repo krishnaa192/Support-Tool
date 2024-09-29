@@ -12,10 +12,13 @@
 }
 
 .modal-content {
-  background: #fff;
+width: 100%;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.modal-content button{
+  border: none;
 }
 
 .close-button {
@@ -35,7 +38,7 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background-color: #6170b6;
+  background-color: #ececec;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   max-width: 1200px;
@@ -44,12 +47,16 @@
 
 .graph-data h2 {
   font-size: 24px;
+  color:black !important;
 }
 
 .data-card {
-  color: white;
+  color: black;
   border-radius: 8px;
-  
+  height: 85px;
+
+  padding: 20px;
+ margin-bottom: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -57,12 +64,13 @@
   list-style-type: none;
   padding: 0;
   display: flex;
-  gap: 26px;
+  gap: 17px;
 }
 
 .data-card li {
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: bold;
 }
 
 .data-card strong {
@@ -76,7 +84,7 @@
 }
 
 .data-stats {
-  background-color: white;
+
   width: 300px;
   margin-right: -42px;
   display: flex;
@@ -87,15 +95,8 @@
   align-content: space-around;
 
 }
-.data-stats ul{
-  background-color: white;
-}
 
-.data-stats ul {
-  padding: 12px;
-  border: 2px solid #ebecf1;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+
 
 ul {
   list-style-type: none;
@@ -156,7 +157,9 @@ ul {
 }
 .graph{
   display: flex;
+  border-radius: 10px;
   background-color: white;
+ 
   
 margin-bottom: 12px;
 }
@@ -175,4 +178,58 @@ margin-left: 82px;
 .graph-cont{
   border-radius: 10px;
   background-color: white;
+}
+.condensed{
+  width: 50px;
+}
+/* WeeklyDataTable.css */
+.weekly-data-table {
+
+  border-collapse: collapse; /* Remove space between borders */
+  margin: 20px 17px; /* Add margin to the top and bottom */
+  font-size: 16px; /* Set a readable font size */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+}
+
+.weekly-data-table th,
+.weekly-data-table td {
+  padding: 12px; /* Add padding for better spacing */
+  text-align: left; /* Align text to the left */
+  border-bottom: 1px solid #ddd; /* Light gray border below rows */
+}
+
+.weekly-data-table th {
+  background-color: #4CAF50; /* Green background for header */
+  color: white; /* White text for header */
+}
+
+.weekly-data-table tr:hover {
+  background-color: #f5f5f5; /* Light gray background on hover */
+}
+
+.weekly-data-table .condensed {
+
+  color: #333; /* Darker text color */
+  width: 50px; /* Set a fixed width for condensed cells */
+  max-width: 50px !important; /* Prevent exceeding this width */
+  overflow: hidden; /* Hide overflow text */
+  text-overflow: ellipsis; /* Show ellipsis for overflow text */
+  white-space: nowrap; /* Prevent wrapping of text */
+}
+
+.weekly-data-table .condensed:hover {
+  background-color: #e0e0e0; /* Change background on hover */
+}
+
+.graph-cont{
+  margin-bottom: 10px;
+}
+.data-stats ul li{
+  width: 179px;
+  border-radius:10px;
+  height: 60px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 5px;
+  padding: 5px;
 }

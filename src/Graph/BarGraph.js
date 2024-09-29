@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import "../css/Barchart.css";
 
-const BarChart = ({ data, width =800 }) => {
+const BarChart = ({ data, width = 800 }) => {
   const svgRef = useRef();
 
   useEffect(() => {
@@ -26,8 +26,8 @@ const BarChart = ({ data, width =800 }) => {
     const x1 = d3
       .scaleBand()
       .domain(["pingenCount", "pinverCount"])
-      .range([0,63]) 
-      .padding(0); 
+      .range([0, 63])
+      .padding(0);
 
     const y = d3
       .scaleLinear()
@@ -48,6 +48,20 @@ const BarChart = ({ data, width =800 }) => {
       .style("padding", "8px")
       .style("border-radius", "5px")
       .style("pointer-events", "none");
+
+    // Draw grid lines
+    svg.append("g")
+      .attr("class", "grid")
+      .selectAll("line")
+      .data(y.ticks())
+      .enter()
+      .append("line")
+      .attr("x1", 0)
+      .attr("x2", chartWidth)
+      .attr("y1", d => y(d))
+      .attr("y2", d => y(d))
+      .attr("stroke", "#ccc") // Color of the grid lines
+      .attr("stroke-dasharray", "2,2"); // Optional: Dashed lines for grid
 
     svg
       .append("g")
@@ -87,15 +101,21 @@ const BarChart = ({ data, width =800 }) => {
       });
 
     // X axis
-    svg.append("g")
+    const xAxis = svg.append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x0));
 
     // Y axis
-    svg.append("g")
+    const yAxis = svg.append("g")
       .attr("class", "y-axis")
       .call(d3.axisLeft(y));
+
+    // Style the axes to be bold and colored
+    xAxis.select("path").style("stroke", "black").style("stroke-width", 2); // Change color and make it bold
+    xAxis.selectAll("line").style("stroke", "black").style("stroke-width", 2); // Make x-axis lines bold
+    yAxis.select("path").style("stroke", "black").style("stroke-width", 2); // Change color and make it bold
+    yAxis.selectAll("line").style("stroke", "black").style("stroke-width", 2); // Make y-axis lines bold
 
     return () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -759,8 +759,8 @@ th, td {
   padding: 10px;
   text-align: center;
   border: 1px solid #ddd;
-  min-width: 100px; /* Minimum width to prevent squeezing */
-  white-space: nowrap; /* Prevent text from wrapping */
+min-width: 100px; 
+  white-space: nowrap; 
 }
 
 /* Specific column widths if necessary */

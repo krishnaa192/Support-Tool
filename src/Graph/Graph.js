@@ -39,6 +39,7 @@ const LinearChart = ({ data, title }) => {
     // Clear previous axes
     g.selectAll('.x-axis').remove();
     g.selectAll('.y-axis').remove();
+    g.selectAll('.grid').remove(); // Clear previous grid lines
 
     // Add X axis
     g.append('g')
@@ -51,23 +52,51 @@ const LinearChart = ({ data, title }) => {
       .attr('class', 'y-axis')
       .call(d3.axisLeft(y));
 
-    // Clear previous lines
+    // Add horizontal grid lines
+    const yTicks = y.ticks(); // Get y-axis ticks
+    g.append('g')
+      .attr('class', 'grid')
+      .selectAll('line')
+      .data(yTicks)
+      .enter()
+      .append('line')
+      .attr('x1', 0)
+      .attr('x2', innerWidth)
+      .attr('y1', d => y(d))
+      .attr('y2', d => y(d))
+      .attr('stroke', '#ccc') // Grid line color
+      .attr('stroke-dasharray', '2,2'); // Dashed lines
+
+    // Clear previous lines and area
     g.selectAll('.line').remove();
+    g.selectAll('.area').remove(); // Remove previous area fills
 
     // Define line generator
     const lineGenerator = d3.line()
       .x(d => x(d.date))
       .y(d => y(d.pinverCountSuccess));
 
+    // Define area generator
+    const areaGenerator = d3.area()
+      .x(d => x(d.date))
+      .y0(innerHeight) // Start from the bottom of the chart
+      .y1(d => y(d.pinverCountSuccess));
+
+    // Add area fill for pinverCountSuccess
+    g.append('path')
+      .datum(data)
+      .attr('class', 'area pinverCountSuccess')
+      .attr('fill', '#edafb8') // Fill color
+      .attr('d', areaGenerator);
+
     // Add line for pinverCountSuccess
     g.append('path')
       .datum(data)
       .attr('class', 'line pinverCountSuccess')
       .attr('fill', 'none')
-      .attr('stroke', 'green') // Ensure line color is green
+      .attr('stroke', '#edafb8') // Ensure line color is green
       .attr('stroke-width', 2)
       .attr('d', lineGenerator);
-
 
     // Clear previous dots
     g.selectAll('.dot').remove();
@@ -90,7 +119,7 @@ const LinearChart = ({ data, title }) => {
          PGS: ${d.pingenCountSuccess}<br/>
           PV: ${d.pinverCount}<br/>
            PVS: ${d.pinverCountSuccess}<br/>
-            CR: ${d.pingenCountSuccess ? ((d.pinverCountSuccess / d.pingenCount)*100).toFixed(2) : 'N/A'}
+            CR: ${d.pingenCountSuccess ? ((d.pinverCountSuccess / d.pingenCount) * 100).toFixed(2) : 'N/A'}
           `);
       })
       .on('mousemove', (event) => {
@@ -102,8 +131,6 @@ const LinearChart = ({ data, title }) => {
         tooltip.style('opacity', 0);
       });
 
-  
-
   }, [data, title]);
 
   return (
@@ -113,8 +140,6 @@ const LinearChart = ({ data, title }) => {
         width={800}
         height={400}
       >
-      
-       
       </svg>
       <div
         ref={tooltipRef}

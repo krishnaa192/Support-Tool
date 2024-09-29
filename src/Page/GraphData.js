@@ -66,20 +66,29 @@ if (loading) {
   const pgsCount = selectedData ? selectedData.hours.reduce((acc, curr) => acc + curr.pingenCountSuccess, 0) : 0;
   const pvCount = selectedData ? selectedData.hours.reduce((acc, curr) => acc + curr.pinverCount, 0) : 0;
   const pvsCount = selectedData ? selectedData.hours.reduce((acc, curr) => acc + curr.pinverCountSuccess, 0) : 0;
+// Function to format the date to MM/DD/YYYY
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
+};
 
-  // Modify barChartData according to the preprocess function
-  const barChartData = weekly.flatMap(item => 
-    item.dailyCounts.map(dailyItem => ({
-      date: dailyItem.entryDate,
-      pingenCount: dailyItem.pinGenReqCount,
-      pinverCount: dailyItem.pinVerReqCount,
-      pingenCountSuccess:dailyItem.pinGenSucCount,
-      pinverCountSuccess:dailyItem.pinVerSucCount,
-      cr: dailyItem.pinGenReqCount > 0
-        ? (( dailyItem.pinVerSucCount/dailyItem.pinGenReqCount ) * 100).toFixed(2)
-        : 'N/A',
-    }))
-  );
+// Modify barChartData according to the preprocess function
+const barChartData = weekly.flatMap(item => 
+  item.dailyCounts.map(dailyItem => ({
+    date: formatDate(dailyItem.entryDate), // Format the date here
+    pingenCount: dailyItem.pinGenReqCount,
+    pinverCount: dailyItem.pinVerReqCount,
+    pingenCountSuccess: dailyItem.pinGenSucCount,
+    pinverCountSuccess: dailyItem.pinVerSucCount,
+    cr: dailyItem.pinGenReqCount > 0
+      ? ((dailyItem.pinVerSucCount / dailyItem.pinGenReqCount) * 100).toFixed(2)
+      : 'N/A',
+  }))
+);
+
 
   // Add loading spinner
   if (!selectedData) {
@@ -95,11 +104,11 @@ if (loading) {
           <FaWindowClose className="exit" />
         </button>
         <div className="graph-data">
-          <h2>PVS Graph</h2>
+         
           <div className="data-card">
             {selectedData && (
               <ul>
-                <li>Territory: {selectedData.info.territory || 'N/A'}</li>
+                <li>Territory: {selectedData.info.territory || 'N/A'}</li>  
                 <li>Service Name: {selectedData.info.servicename || 'N/A'}</li>
                 <li>Operator: {selectedData.info.operator || 'N/A'}</li>
                 <li>Partner: {selectedData.info.partner || 'N/A'}</li>
@@ -109,8 +118,10 @@ if (loading) {
               </ul>
             )}
           </div>
-
+          <div className="graph-cont">
+          <h2> PVS Graph</h2>
           <div className="graph">
+          
             {selectedData && chartData.length > 0 && (
               <LinearChart data={chartData} title={`PVS for Service ID ${serviceId}`} />
             )}
@@ -123,6 +134,7 @@ if (loading) {
                 <li>CR: {pgsCount ? ((pvsCount / pgCount) * 100).toFixed(2) : 'N/A'}%</li>
               </ul>
             </div>
+          </div>
           </div>
 {/* add condition that if barChartData exist for this  then render
  */}
@@ -145,9 +157,9 @@ if (loading) {
             {barChartData.map((item, index) => (
               <tr key={index}>
                 <td>{item.date}</td>
-                <td>{item.pingenCount}</td>
-                <td>{item.pinverCount}</td>
-                <td>{((item.pinverCount / item.pingenCount) * 100).toFixed(2)}</td>
+                <td className='condensed'>{item.pingenCount}</td>
+                <td className='condensed'>{item.pinverCount}</td>
+                <td className='condensed'>{((item.pinverCount / item.pingenCount) * 100).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

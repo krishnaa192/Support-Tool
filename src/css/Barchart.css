@@ -3,4 +3,13 @@
     line-height: 1.4;
     color: black !important;
   }
+
+  rect{
+    width: 25px;
+    margin: 0px;
+
+  }
+  g{
+    padding: 0px;
+  }
   
