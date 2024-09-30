@@ -33,9 +33,9 @@ const LinearChart = ({ data, title }) => {
       .range([0, innerWidth]);
 
     const y = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.pinverCountSuccess)])
+      .domain([0, d3.max(data, d => d.pinverCountSuccess)]).nice()
       .range([innerHeight, 0]);
-
+    
     // Clear previous axes
     g.selectAll('.x-axis').remove();
     g.selectAll('.y-axis').remove();

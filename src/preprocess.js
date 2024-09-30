@@ -1,8 +1,7 @@
 const preprocess = (data) => {
     const weeklyData = {};
     const currentDate = new Date();
-    const currentHour = currentDate.getHours(); // Get current hour
-
+   
     if (!Array.isArray(data)) {
         console.error("Data is not an array:", data);
         return [];
@@ -18,7 +17,6 @@ const preprocess = (data) => {
             partnerName,
             biller,
             service_owner,
-            hrs,
             pinGenReqCount,
             pinGenSucCount,
             pinVerSucCount,
@@ -26,7 +24,6 @@ const preprocess = (data) => {
             timestamp
         } = item;
 
-        const hour = parseInt(hrs, 10); // Ensure hour is a number
 
         // Ensure the appServiceId entry exists
         if (!weeklyData[appServiceId]) {
@@ -40,18 +37,18 @@ const preprocess = (data) => {
                     billername: biller || '',
                     operatorid: operatorid || '',
                     service_partner: service_owner || '',
-                    Datadate: new Date(timestamp).toDateString(), // Store only the date part
+                    Datadate: new Date(timestamp).toDateString(), 
                 },
-                dailyCounts: {} // Initialize dailyCounts as an object to hold daily entries
+                dailyCounts: {} 
             };
         }
 
         // Get the date of the entry
-        const entryDate = new Date(timestamp).toDateString(); // Extract only the date part
+        const entryDate = new Date(timestamp).toDateString(); 
         const isToday = currentDate.toDateString() === entryDate;
 
         // Only sum the data for hours before the current hour if it is today's data
-        if (!isToday || hour < currentHour) {
+        if (!isToday ) {
             // If the entry for that date does not exist, create it
             if (!weeklyData[appServiceId].dailyCounts[entryDate]) {
                 weeklyData[appServiceId].dailyCounts[entryDate] = {

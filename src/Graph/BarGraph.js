@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import "../css/Barchart.css";
 
-const BarChart = ({ data, width = 800 }) => {
+const BarChart = ({ data, width = 820 }) => {
   const svgRef = useRef();
 
   useEffect(() => {
@@ -35,11 +35,14 @@ const BarChart = ({ data, width = 800 }) => {
       .nice()
       .range([height, 0]);
 
-    const color = d3.scaleOrdinal()
+    const color = d3
+      .scaleOrdinal()
       .domain(["pingenCount", "pinverCount"])
       .range(["steelblue", "orange"]);
 
-    const tooltip = d3.select("body").append("div")
+    const tooltip = d3
+      .select("body")
+      .append("div")
       .attr("class", "tooltip")
       .style("opacity", 0)
       .style("position", "absolute")
@@ -50,7 +53,8 @@ const BarChart = ({ data, width = 800 }) => {
       .style("pointer-events", "none");
 
     // Draw grid lines
-    svg.append("g")
+    svg
+      .append("g")
       .attr("class", "grid")
       .selectAll("line")
       .data(y.ticks())
@@ -58,10 +62,10 @@ const BarChart = ({ data, width = 800 }) => {
       .append("line")
       .attr("x1", 0)
       .attr("x2", chartWidth)
-      .attr("y1", d => y(d))
-      .attr("y2", d => y(d))
-      .attr("stroke", "#ccc") // Color of the grid lines
-      .attr("stroke-dasharray", "2,2"); // Optional: Dashed lines for grid
+      .attr("y1", (d) => y(d))
+      .attr("y2", (d) => y(d))
+      .attr("stroke", "#ccc")
+      .attr("stroke-dasharray", "2,2");
 
     svg
       .append("g")
@@ -79,46 +83,50 @@ const BarChart = ({ data, width = 800 }) => {
       .append("rect")
       .attr("x", (d) => x1(d.key))
       .attr("y", (d) => y(d.value))
-      .attr("width", 30) // Set fixed width
+      .attr("width", 30)
       .attr("height", (d) => height - y(d.value))
       .attr("fill", (d) => color(d.key))
-      .style("stroke", "black") // Optional: Add stroke to rectangles
-      .style("stroke-width", 1) // Optional: Set stroke width
+      .style("stroke", "black")
+      .style("stroke-width", 1)
       .on("mouseover", (event, d) => {
         tooltip.transition().duration(200).style("opacity", 1);
-        
+
         const countType = d.key;
-        const item = data.find(item => 
+        const item = data.find((item) =>
           countType === "pingenCount" ? item.pingenCount === d.value : item.pinverCount === d.value
         );
 
-        tooltip.html(`
-          ${countType === "pingenCount" ? "PG" : "PV"}: ${d.value} <br />
-          ${countType === "pingenCount" ? "PGS" : "PVS"}: ${countType === "pingenCount" ? item.pingenCountSuccess : item.pinverCountSuccess}
-        `)
-        .style("left", event.pageX + "px")
-        .style("top", event.pageY - 28 + "px");
+        tooltip
+          .html(`
+            ${countType === "pingenCount" ? "PG" : "PV"}: ${d.value} <br />
+            ${countType === "pingenCount" ? "PGS" : "PVS"}: ${
+            countType === "pingenCount" ? item.pingenCountSuccess : item.pinverCountSuccess
+          }
+          `)
+          .style("left", event.pageX + "px")
+          .style("top", event.pageY - 28 + "px");
+      })
+      .on("mouseout", () => {
+        tooltip.transition().duration(500).style("opacity", 0);
       });
 
     // X axis
-    const xAxis = svg.append("g")
+    const xAxis = svg
+      .append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x0));
 
     // Y axis
-    const yAxis = svg.append("g")
-      .attr("class", "y-axis")
-      .call(d3.axisLeft(y));
+    const yAxis = svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
 
     // Style the axes to be bold and colored
-    xAxis.select("path").style("stroke", "black").style("stroke-width", 2); // Change color and make it bold
-    xAxis.selectAll("line").style("stroke", "black").style("stroke-width", 2); // Make x-axis lines bold
-    yAxis.select("path").style("stroke", "black").style("stroke-width", 2); // Change color and make it bold
-    yAxis.selectAll("line").style("stroke", "black").style("stroke-width", 2); // Make y-axis lines bold
+    xAxis.select("path").style("stroke", "black").style("stroke-width", 2);
+    xAxis.selectAll("line").style("stroke", "black").style("stroke-width", 2);
+    yAxis.select("path").style("stroke", "black").style("stroke-width", 2);
+    yAxis.selectAll("line").style("stroke", "black").style("stroke-width", 2);
 
     return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       d3.select(svgRef.current).selectAll("*").remove();
       tooltip.remove();
     };

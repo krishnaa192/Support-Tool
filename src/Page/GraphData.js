@@ -72,7 +72,7 @@ const formatDate = (dateString) => {
   const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
   const day = String(date.getDate()).padStart(2, '0');
   const year = date.getFullYear();
-  return `${month}/${day}/${year}`;
+  return `${day}-${month}-${year}`;
 };
 
 // Modify barChartData according to the preprocess function
@@ -100,11 +100,11 @@ const barChartData = weekly.flatMap(item =>
   return (
     <div className="modal-overlay">
       <div className="modal-content">
+        
+        <div className="graph-data">
         <button onClick={onClose} aria-label="Close modal">
           <FaWindowClose className="exit" />
         </button>
-        <div className="graph-data">
-         
           <div className="data-card">
             {selectedData && (
               <ul>
@@ -159,7 +159,7 @@ const barChartData = weekly.flatMap(item =>
                 <td>{item.date}</td>
                 <td className='condensed'>{item.pingenCount}</td>
                 <td className='condensed'>{item.pinverCount}</td>
-                <td className='condensed'>{((item.pinverCount / item.pingenCount) * 100).toFixed(2)}</td>
+                <td className='condensed'>{((item.pinverCountSuccess / item.pingenCount) * 100).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

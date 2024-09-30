@@ -23,6 +23,7 @@ height: 100vh;
   }
   .graph-data button{
     height: 20px;
+    display: contents;
     color: black;
   }
   
