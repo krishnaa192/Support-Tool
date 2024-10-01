@@ -101,7 +101,11 @@ const BarChart = ({ data, width = 820 }) => {
             ${countType === "pingenCount" ? "PG" : "PV"}: ${d.value} <br />
             ${countType === "pingenCount" ? "PGS" : "PVS"}: ${
             countType === "pingenCount" ? item.pingenCountSuccess : item.pinverCountSuccess
-          }
+          }  <br />
+          CR: ${Math.min(
+      ((item.pinverCountSuccess / item.pingenCount) * 100).toFixed(2),
+      100
+      )}%
           `)
           .style("left", event.pageX + "px")
           .style("top", event.pageY - 28 + "px");

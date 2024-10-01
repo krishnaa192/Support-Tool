@@ -379,18 +379,25 @@ const DataList = () => {
       'Service Partner', 'Status', 'Daily Cap'
     ];
   
-    // Dynamic hour headers based on the number of hours in the data
+    // Get the current hour (0-23)
+    const currentHour = new Date().getHours();
+  
+    // Create hour headers starting from 12 AM to the current hour
     const hourHeaders = [];
-    for (let i = 0; i < 24; i++) {
-      const startHour = i;
-      const endHour = (startHour + 1) % 24;
+    for (let i = 0; i <= currentHour; i++) {
+      const startHour = i;  // Hour starting from 12 AM
+      const endHour = (startHour + 1) % 24;  // Next hour
+  
+      // Format hours
       const startHourFormatted = startHour === 0 ? '12 AM' : startHour < 12 ? `${startHour} AM` : startHour === 12 ? '12 PM' : `${startHour - 12} PM`;
       const endHourFormatted = endHour === 0 ? '12 AM' : endHour < 12 ? `${endHour} AM` : endHour === 12 ? '12 PM' : `${endHour - 12} PM`;
+  
+      // Add formatted hours to headers
       hourHeaders.push(`${startHourFormatted} - ${endHourFormatted}`);
     }
   
     // Combine headers
-    const headers = metadataHeaders.concat(hourHeaders);
+    const headers = metadataHeaders.concat(hourHeaders.reverse());  // Reverse to display from current hour to 12 AM
   
     // Create rows for metadata and data
     const wsData = [];
@@ -413,17 +420,23 @@ const DataList = () => {
         info.dailycap
       ];
   
-      // Add hour data (pg-pgs-pv-pvs) to the metadata row
-      for (let i = 0; i < 24; i++) {
-        const hourData = hours[i] || {}; // Ensure hours[i] exists
+      // Initialize a row of hour data
+      const hourDataRow = [];
+  
+      // Add hour data (pg-pgs-pv-pvs) for hours from 12 AM to the current hour (in reverse)
+      for (let i = currentHour; i >= 0; i--) {
+        const hourData = hours[i] || {};  // Ensure hours[i] exists
         const pingenCount = hourData.pingenCount || 0;
         const pingenCountSuccess = hourData.pingenCountSuccess || 0;
         const pinverCount = hourData.pinverCount || 0;
         const pinverCountSuccess = hourData.pinverCountSuccess || 0;
-        metadataRow.push(`${pingenCount} - ${pingenCountSuccess} - ${pinverCount} - ${pinverCountSuccess}`);
+  
+        // Add data to the hourDataRow
+        hourDataRow.push(`${pingenCount} - ${pingenCountSuccess} - ${pinverCount} - ${pinverCountSuccess}`);
       }
   
-      wsData.push(metadataRow);  // Add metadata and hour data to wsData
+      // Concatenate the metadata row with the hour data row
+      wsData.push(metadataRow.concat(hourDataRow.reverse()));  // Reverse to display from current hour to 12 AM
     });
   
     // Convert data array to a worksheet
@@ -439,7 +452,6 @@ const DataList = () => {
     XLSX.writeFile(wb, 'data.xlsx');
   };
   
-
   return (
     <>
       <div className="custom-search-col">

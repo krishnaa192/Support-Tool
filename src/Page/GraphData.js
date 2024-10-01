@@ -131,6 +131,7 @@ const barChartData = weekly.flatMap(item =>
                 <li>Total PGS: {pgsCount}</li>
                 <li>Total PV: {pvCount}</li>
                 <li>Total PVS: {pvsCount}</li>
+                
                 <li>CR: {pgsCount ? ((pvsCount / pgCount) * 100).toFixed(2) : 'N/A'}%</li>
               </ul>
             </div>
@@ -159,7 +160,11 @@ const barChartData = weekly.flatMap(item =>
                 <td>{item.date}</td>
                 <td className='condensed'>{item.pingenCount}</td>
                 <td className='condensed'>{item.pinverCount}</td>
-                <td className='condensed'>{((item.pinverCountSuccess / item.pingenCount) * 100).toFixed(2)}</td>
+                <td className='condensed'>{Math.min(
+      ((item.pinverCountSuccess / item.pingenCount) * 100).toFixed(2),
+      100
+      )}%
+                 </td>
               </tr>
             ))}
           </tbody>
