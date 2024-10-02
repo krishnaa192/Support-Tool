@@ -368,7 +368,7 @@ const DataList = () => {
       acc[serviceId] = data[serviceId];
       return acc;
     }, {});
-    if (!Object.keys(service).length) return;  // Check if service is empty
+    if (!Object.keys(service).length) return; // Check if service is empty
   
     // Create a new workbook and worksheet
     const wb = XLSX.utils.book_new();
@@ -382,11 +382,11 @@ const DataList = () => {
     // Get the current hour (0-23)
     const currentHour = new Date().getHours();
   
-    // Create hour headers starting from 12 AM to the current hour
+    // Create hour headers starting from the current hour down to 12 AM
     const hourHeaders = [];
-    for (let i = 0; i <= currentHour; i++) {
-      const startHour = i;  // Hour starting from 12 AM
-      const endHour = (startHour + 1) % 24;  // Next hour
+    for (let i = currentHour; i >= 0; i--) {
+      const startHour = i; // Hour starting from current hour down to 12 AM
+      const endHour = (startHour + 1) % 24; // Next hour
   
       // Format hours
       const startHourFormatted = startHour === 0 ? '12 AM' : startHour < 12 ? `${startHour} AM` : startHour === 12 ? '12 PM' : `${startHour - 12} PM`;
@@ -397,11 +397,11 @@ const DataList = () => {
     }
   
     // Combine headers
-    const headers = metadataHeaders.concat(hourHeaders.reverse());  // Reverse to display from current hour to 12 AM
+    const headers = metadataHeaders.concat(hourHeaders); // No need to reverse this time
   
     // Create rows for metadata and data
     const wsData = [];
-    wsData.push(headers);  // Add headers to the worksheet
+    wsData.push(headers); // Add headers to the worksheet
   
     // Loop through each service and add its data
     Object.keys(service).forEach(serviceId => {
@@ -423,9 +423,9 @@ const DataList = () => {
       // Initialize a row of hour data
       const hourDataRow = [];
   
-      // Add hour data (pg-pgs-pv-pvs) for hours from 12 AM to the current hour (in reverse)
+      // Add hour data (pg-pgs-pv-pvs) for hours from current hour down to 12 AM
       for (let i = currentHour; i >= 0; i--) {
-        const hourData = hours[i] || {};  // Ensure hours[i] exists
+        const hourData = hours[i] || {}; // Ensure hours[i] exists
         const pingenCount = hourData.pingenCount || 0;
         const pingenCountSuccess = hourData.pingenCountSuccess || 0;
         const pinverCount = hourData.pinverCount || 0;
@@ -436,7 +436,7 @@ const DataList = () => {
       }
   
       // Concatenate the metadata row with the hour data row
-      wsData.push(metadataRow.concat(hourDataRow.reverse()));  // Reverse to display from current hour to 12 AM
+      wsData.push(metadataRow.concat(hourDataRow)); // No need to reverse hourDataRow
     });
   
     // Convert data array to a worksheet
@@ -451,6 +451,7 @@ const DataList = () => {
     // Write the workbook to a file
     XLSX.writeFile(wb, 'data.xlsx');
   };
+  
   
   return (
     <>
