@@ -1,16 +1,13 @@
-
 import axios from 'axios';
 import { storeInIndexedDB, getFromIndexedDB } from './IndexedUtils'; // Ensure this path is correct
 
-// Cached data and last fetch time
 let dataPromise = null;
 let lastFetchTime = 0;
 const CACHE_DURATION = 15 * 60 * 1000; // Cache for 15 minutes
 
-
 const ApiRequest = async () => {
     const now = Date.now();
-    const api_url = process.env.REACT_APP_API_URL; // Make sure this is set correctly in your .env file
+    const api_url = process.env.REACT_APP_API_URL; // Ensure this is set correctly in your .env file
 
     // Check if cached data is still valid
     if (!dataPromise || (now - lastFetchTime > CACHE_DURATION)) {
@@ -32,7 +29,32 @@ const ApiRequest = async () => {
     }
     return dataPromise;
 };
-// Helper function to check if 24 hours have passed
+
+const manageStoredDailyData = async (data) => {
+    const cachedData = (await getFromIndexedDB('cachedDailyData')) || [];
+    
+    const today = new Date().toISOString().split('T')[0];
+
+    const existingDataIndex = cachedData.findIndex(entry => entry.timestamp === today);
+    if (existingDataIndex !== -1) {
+        cachedData.splice(existingDataIndex, 1); // Remove the existing entry
+    }
+    // Add today's data entry
+    cachedData.push({ timestamp: today, data });
+
+    // Keep only the last 7 days of data
+    // Sort by timestamp (this keeps the most recent entries at the end)
+    cachedData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    // Trim the array to a maximum of 7 entries
+    if (cachedData.length > 7) {
+        cachedData.splice(0, cachedData.length - 7); // Retain only the last 7 entries
+    }
+    // Store updated data in IndexedDB
+    await storeInIndexedDB('cachedDailyData', cachedData);
+};
+
+
+// Function to check if 24 hours have passed
 const shouldCallApi = (lastApiCallTime) => {
     const lastCallDate = new Date(lastApiCallTime);
     const currentTime = new Date();
@@ -42,9 +64,9 @@ const shouldCallApi = (lastApiCallTime) => {
 
 // Function to get daily data with 24-hour rate-limiting
 const dailyData = async () => {
-    const api_url = process.env.REACT_APP_HOURLY_URL;
+    const api_url_week = process.env.REACT_APP_HOURLY_URL;
 
-    // Retrieve the last API call time and cached data from IndexedDB
+    // Retrieve the last API call time from local storage
     const lastApiCallTime = localStorage.getItem('lastApiCallTime');
     const cachedData = await getFromIndexedDB('cachedDailyData');
 
@@ -55,7 +77,7 @@ const dailyData = async () => {
 
     try {
         // Use axios to make the API call
-        const response = await axios.get(api_url, {
+        const response = await axios.get(api_url_week, {
             headers: { 'Content-Type': 'application/json' },
         });
 
@@ -65,10 +87,10 @@ const dailyData = async () => {
 
         const data = response.data;
 
-        // Try to store the response data in IndexedDB
+        // Try to manage and store the response data in IndexedDB
         try {
             localStorage.setItem('lastApiCallTime', new Date().toISOString());
-            await storeInIndexedDB('cachedDailyData', data);
+            await manageStoredDailyData(data);
         } catch (error) {
             console.error('Failed to store data in IndexedDB:', error);
         }
@@ -80,10 +102,6 @@ const dailyData = async () => {
     }
 };
 
-// Function to manually refresh data
-export const refreshApiRequest = () => {
-    dataPromise = null; // Reset the promise to force a new API call
-    return ApiRequest();
-};
+
 
 export { ApiRequest, dailyData };

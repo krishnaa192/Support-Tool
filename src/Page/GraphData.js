@@ -74,21 +74,23 @@ const formatDate = (dateString) => {
   const year = date.getFullYear();
   return `${day}-${month}-${year}`;
 };
-
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 8);
 // Modify barChartData according to the preprocess function
 const barChartData = weekly.flatMap(item => 
-  item.dailyCounts.map(dailyItem => ({
-    date: formatDate(dailyItem.entryDate), // Format the date here
-    pingenCount: dailyItem.pinGenReqCount,
-    pinverCount: dailyItem.pinVerReqCount,
-    pingenCountSuccess: dailyItem.pinGenSucCount,
-    pinverCountSuccess: dailyItem.pinVerSucCount,
-    cr: dailyItem.pinGenReqCount > 0
-      ? ((dailyItem.pinVerSucCount / dailyItem.pinGenReqCount) * 100).toFixed(2)
-      : 'N/A',
-  }))
+  item.dailyCounts
+    .filter(dailyItem => new Date(dailyItem.entryDate) >= sevenDaysAgo) // Filter last 7 days
+    .map(dailyItem => ({
+      date: formatDate(dailyItem.entryDate), // Format the date here
+      pingenCount: dailyItem.pinGenReqCount,
+      pinverCount: dailyItem.pinVerReqCount,
+      pingenCountSuccess: dailyItem.pinGenSucCount,
+      pinverCountSuccess: dailyItem.pinVerSucCount,
+      cr: dailyItem.pinGenReqCount > 0
+        ? ((dailyItem.pinVerSucCount / dailyItem.pinGenReqCount) * 100).toFixed(2)
+        : 'N/A',
+    }))
 );
-
 
   // Add loading spinner
   if (!selectedData) {
