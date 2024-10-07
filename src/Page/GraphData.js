@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BarChart from '../Graph/BarGraph';
 import LinearChart from '../Graph/Graph';
 import { processDataByServiceId } from '../utils';
-import { ApiRequest, dailyData } from '../APi';
+import { ApiRequest,dailyData  } from '../APi';
 import '../css/D3chart.css';
 import '../css/Modal.css';
 import Loading from '../components/Loading';
@@ -16,11 +16,15 @@ const GraphData = ({ isOpen, onClose, serviceId }) => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Set loading to true when starting to fetch data
+
       try {
+        // Fetch and process API data
         const response = await ApiRequest();
         const processedData = processDataByServiceId(response);
         setData(processedData);
 
+        // Fetch and process cached hourly data
         const weeklyData = await dailyData();
         const processedWeeklyData = preprocess(weeklyData);
 
@@ -29,11 +33,11 @@ const GraphData = ({ isOpen, onClose, serviceId }) => {
           item => String(item.info.appServiceId) === String(serviceId)
         );
 
-        setWeekly(Array.isArray(filteredWeeklyData) ? filteredWeeklyData : []);
-        setLoading(false);
+        setWeekly(filteredWeeklyData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setLoading(false);
+      } finally {
+        setLoading(false); // Set loading to false after fetching is done
       }
     };
 
@@ -45,7 +49,7 @@ const GraphData = ({ isOpen, onClose, serviceId }) => {
       setSelectedData(data[serviceId]);
     }
   }, [serviceId, data]);
-//loading
+
 
 if (loading) {
   return <Loading />;
@@ -87,7 +91,7 @@ const barChartData = weekly.flatMap(item =>
       pingenCountSuccess: dailyItem.pinGenSucCount,
       pinverCountSuccess: dailyItem.pinVerSucCount,
       cr: dailyItem.pinGenReqCount > 0
-        ? ((dailyItem.pinVerSucCount / dailyItem.pinGenReqCount) * 100).toFixed(2)
+        ? ((dailyItem.pinVerSucCount / dailyItem.pinGenSuccCount) * 100).toFixed(2)
         : 'N/A',
     }))
 );
@@ -134,7 +138,7 @@ const barChartData = weekly.flatMap(item =>
                 <li>Total PV: {pvCount}</li>
                 <li>Total PVS: {pvsCount}</li>
                 
-                <li>CR: {pgsCount ? ((pvsCount / pgCount) * 100).toFixed(2) : 'N/A'}%</li>
+                <li>CR: {pgsCount ? ((pvsCount / pgsCount) * 100).toFixed(2) : 'N/A'}%</li>
               </ul>
             </div>
           </div>
@@ -163,7 +167,7 @@ const barChartData = weekly.flatMap(item =>
                 <td className='condensed'>{item.pingenCount}</td>
                 <td className='condensed'>{item.pinverCount}</td>
                 <td className='condensed'>{Math.min(
-      ((item.pinverCountSuccess / item.pingenCount) * 100).toFixed(2),
+      ((item.pinverCountSuccess / item.pingenCountSuccess) * 100).toFixed(2),
       100
       )}%
                  </td>

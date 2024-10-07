@@ -723,9 +723,9 @@ const DataList = () => {
                             <button onClick={() => openModal(serviceId)}>     <i className="fa-solid fa-chart-line"></i>
                               Graph</button>
 
-                            <Link to={`http://103.150.136.251:8080/app_log/${serviceId}.txt`} target="_blank">
-                              <i className="fa-solid fa-file-circle-plus"></i>  Logs
-                            </Link>
+                              <a href={`http://103.150.136.251:8080/mglobopay/getDataLoggerWithAppId?campaignName=${serviceId}`} target="_blank" rel="noopener noreferrer">
+                              <i className="fa-solid fa-file-circle-plus"></i> Logs
+                            </a>
                           </div>
                         </div>
                       </td>

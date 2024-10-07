@@ -2,14 +2,12 @@
 const openIndexedDB = () => {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open("ApiCacheDB", 1);
-
         request.onupgradeneeded = () => {
             const db = request.result;
             if (!db.objectStoreNames.contains("apiCache")) {
                 db.createObjectStore("apiCache", { keyPath: "key" });
             }
         };
-
         request.onsuccess = () => {
             resolve(request.result);
         };
