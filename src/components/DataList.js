@@ -471,10 +471,8 @@ const DataList = () => {
             <div className="info-box reds">
               <h2>{countInactiveServices() | 0}</h2>
               <p>Deactive</p>
-            </div>
-            <div className="info-box oranges">
-              <h2>{countNoTrafficServices() | 0}</h2>
-              <p>No Traffic</p>
+          
+           
             </div>
           </div>
           <div className="filters">

@@ -92,7 +92,7 @@ background: white;
   flex-direction: row;
   font-size: 15px;
   flex-wrap: wrap;
-  align-content: space-around;
+ 
 
 }
 
@@ -229,7 +229,7 @@ margin-bottom: 12px;
   width: 179px;
   font-weight: bold;
   border-radius:10px;
-  height: 60px;
+  height: 40px;
   border: 2px solid #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 5px;
@@ -237,4 +237,19 @@ margin-bottom: 12px;
   background-color:rgb(237, 175, 184);
   align-content: center;
   padding-left: 50%;
+}
+.graph-dropdown {
+  padding: 8px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.graph-content {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #fff;
 }

@@ -40,7 +40,9 @@ export const processDataByServiceId = (data) => {
             pingenCount,
             pingenCountSuccess,
             pinverCount,
-            pinverCountSuccess
+            pinverCountSuccess,
+            pinverOptCountSuccess
+
         } = item;
 
         const hour = parseInt(time, 10); // Ensure hour is a number
@@ -61,7 +63,9 @@ export const processDataByServiceId = (data) => {
                     pingenCount: 0,
                     pingenCountSuccess: 0,
                     pinverCount: 0,
-                    pinverCountSuccess: 0
+                    pinverCountSuccess: 0,
+                    pinverOptCountSuccess: 0
+
                 }))
             };
         }
@@ -73,6 +77,7 @@ export const processDataByServiceId = (data) => {
                 pingenCountSuccess: processedData[app_serviceid].hours[hour].pingenCountSuccess + (pingenCountSuccess || 0),
                 pinverCount: processedData[app_serviceid].hours[hour].pinverCount + (pinverCount || 0),
                 pinverCountSuccess: processedData[app_serviceid].hours[hour].pinverCountSuccess + (pinverCountSuccess || 0),
+                pinverOptCountSuccess: processedData[app_serviceid].hours[hour].pinverOptCountSuccess + (pinverOptCountSuccess || 0)
             };
         }
     });

@@ -85,14 +85,14 @@ const LinearChart = ({ data, title }) => {
     // Add area fill for pinverCountSuccess
     g.append('path')
       .datum(data)
-      .attr('class', 'area pinverCountSuccess')
+      .attr('class', 'area pinVerScsCountOpt')
       .attr('fill', '#edafb8') // Fill color
       .attr('d', areaGenerator);
 
     // Add line for pinverCountSuccess
     g.append('path')
       .datum(data)
-      .attr('class', 'line pinverCountSuccess')
+      .attr('class', 'line pinVerScsCountOpt')
       .attr('fill', 'none')
       .attr('stroke', '#edafb8') // Ensure line color is green
       .attr('stroke-width', 2)

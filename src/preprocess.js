@@ -21,7 +21,8 @@ const preprocess = (data) => {
             pinGenSucCount,
             pinVerSucCount,
             pinVerReqCount,
-            timestamp
+            timestamp,
+            pinVerScsCountOpt
         } = item;
 
 
@@ -56,7 +57,8 @@ const preprocess = (data) => {
                     pinGenReqCount: 0,
                     pinGenSucCount: 0,
                     pinVerReqCount: 0,
-                    pinVerSucCount: 0
+                    pinVerSucCount: 0,
+                    pinVerScsCountOpt: 0
                 };
             }
 
@@ -65,6 +67,7 @@ const preprocess = (data) => {
             weeklyData[appServiceId].dailyCounts[entryDate].pinGenSucCount += (pinGenSucCount || 0);
             weeklyData[appServiceId].dailyCounts[entryDate].pinVerReqCount += (pinVerReqCount || 0);
             weeklyData[appServiceId].dailyCounts[entryDate].pinVerSucCount += (pinVerSucCount || 0);
+            weeklyData[appServiceId].dailyCounts[entryDate].pinVerScsCountOpt += (pinVerScsCountOpt || 0);
         }
     });
 

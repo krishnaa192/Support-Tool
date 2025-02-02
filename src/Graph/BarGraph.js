@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import "../css/Barchart.css";
 
-const BarChart = ({ data, width = 820 }) => {
+const BarChart = ({ data, width = 800 }) => {
   const svgRef = useRef();
 
   useEffect(() => {
@@ -100,11 +100,17 @@ const BarChart = ({ data, width = 820 }) => {
           .html(`
             ${countType === "pingenCount" ? "PG" : "PV"}: ${d.value} <br />
             ${countType === "pingenCount" ? "PGS" : "PVS"}: ${
-            countType === "pingenCount" ? item.pingenCountSuccess : item.pinverCountSuccess
+            countType === "pingenCount" ? item.pingenCountSuccess : item.pinverOptCountSuccess
           }  <br />
-          CR: ${Math.min(
-      ((item.pinverCountSuccess / item.pingenCount) * 100).toFixed(2),
+          CR(opt): ${Math.min(
+      ((item.pinverOptCountSuccess / item.pingenCountSuccess) * 100).toFixed(2),
       100
+
+      )}%
+      <br />
+      Cr: ${Math.min(
+        ((item.pinverCountSuccess / item.pingenCountSuccess) * 100).toFixed(2),
+        100
       )}%
           `)
           .style("left", event.pageX + "px")

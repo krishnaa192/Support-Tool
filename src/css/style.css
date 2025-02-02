@@ -286,32 +286,6 @@ table td {
     color: white;
 }
 
-  .tabs{
-    display: flex;
-    justify-content: center;
-    height: 45px;
-   
-    padding: 11.2px 21px 11.2px 21px;
-    
-  }
-  .tabs button {
-    background-color: #e8e8e8;
-    border: 1px solid #ddd;
-    color: black;
-    padding: 10px 20px;
-    margin: 4px 2px;
-    cursor: pointer;
-    font-size: 15.4px;
-    line-height: 15.4px;
-    border-radius: 4px;
-    font-weight: 500;
-  }
-  .tabs  button.active {
-    background-color: #007bff; /* Active button color */
-    color: white;
-    border-color: #007bff;
-  }
-
   .info-section {
     display: flex;
     gap: 8px;
@@ -759,7 +733,7 @@ th, td {
   padding: 10px;
   text-align: center;
   border: 1px solid #ddd;
-min-width: 100px; 
+min-width: 75px; 
   white-space: nowrap; 
 }
 

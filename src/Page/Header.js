@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DataList from '../components/DataList';
-import InactiveData from '../components/InactiveData';
 import '../css/style.css';
 import '../css/header.css';
 import { processDataByServiceId } from '../utils';
-import { useNavigate } from 'react-router-dom'
-import { FaSignOutAlt } from "react-icons/fa";
-import {ApiRequest} from '../APi';
+import { useNavigate } from 'react-router-dom';
+import { FaSignOutAlt, FaBell } from 'react-icons/fa';
+import { ApiRequest } from '../APi';
 import Loading from '../components/Loading';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -19,16 +19,18 @@ const Header = () => {
     const savedNotifications = localStorage.getItem('notifications');
     return savedNotifications ? JSON.parse(savedNotifications) : {};
   });
+  // To store additional alert interval IDs if needed.
+  const additionalAlertIntervals = useRef({});
 
-  // Function to remove notifications older than 5 hours
+  // Function to remove notifications older than 5 hours.
   const cleanExpiredNotifications = () => {
-    const currentTime = new Date().getTime();
-    const fiveHoursAgo = currentTime - 5 * 60 * 60 * 1000; // 5 hours in milliseconds
+    const currentTime = Date.now();
+    const fiveHoursAgo = currentTime - 8 * 60 * 60 * 1000; // 5 hours in ms
     const updatedNotifications = Object.fromEntries(
-      Object.entries(notifications).filter(([serviceId, { timestamp }]) => new Date(timestamp).getTime() > fiveHoursAgo)
+      Object.entries(notifications).filter(
+        ([, { timestamp }]) => new Date(timestamp).getTime() > fiveHoursAgo
+      )
     );
-
-    // Update notifications if any were removed
     if (Object.keys(updatedNotifications).length !== Object.keys(notifications).length) {
       setNotifications(updatedNotifications);
       localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
@@ -50,141 +52,208 @@ const Header = () => {
   }, []);
 
   const processdata = processDataByServiceId(data);
-  // Helper function to generate and update notifications
+  console.log(notifications);
+
+  // Update notifications with a new message and mark it as unviewed.
+  // If a notification for the same serviceId was already shown in the last 30 minutes,
+  // then do not update (i.e. skip re-notifying immediately).
   const updateNotifications = (serviceId, message) => {
-    const timestamp = new Date().toISOString(); // Store timestamp in ISO format
-    const newNotifications = { ...notifications, [serviceId]: { message, timestamp } };
-    
-    // Save the updated notifications to local storage and update state
+    const now = Date.now();
+    const THIRTY_MINUTES = 30 * 60 * 1000;
+    if (notifications[serviceId]) {
+      const lastNotified = new Date(notifications[serviceId].timestamp).getTime();
+      if (now - lastNotified < THIRTY_MINUTES) {
+        // A notification for this serviceId was already shown less than 30 minutes ago.
+        return;
+      }
+    }
+    const timestamp = new Date().toISOString();
+    const newNotifications = {
+      ...notifications,
+      [serviceId]: { message, timestamp, viewed: false },
+    };
     localStorage.setItem('notifications', JSON.stringify(newNotifications));
     setNotifications(newNotifications);
+
+    // Show a toast popup.
+    toast.info(message, {
+      position: 'top-right',
+      autoClose: 5000,
+      pauseOnHover: true,
+    });
   };
 
-  // Check if the last 2 hours of pingenCount and pinverCount are 0, then trigger a notification
+  // When user views notifications, mark all as viewed.
+  const viewNotifications = () => {
+    const updatedNotifications = Object.fromEntries(
+      Object.entries(notifications).map(([serviceId, data]) => [
+        serviceId,
+        { ...data, viewed: true },
+      ])
+    );
+    setNotifications(updatedNotifications);
+    localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+  };
+
+  // Check for alerts based on conditions.
   const checkAlert = () => {
     const currentHour = new Date().getHours();
     Object.keys(processdata).forEach(serviceId => {
       const serviceData = processdata[serviceId];
-      const hourData = serviceData.hours.filter(
-        item => item.hour >= currentHour - 2 && item.hour <= currentHour
+  
+      // Filter items for the current or previous hour AND with status 'ACTIVE'
+      const hourData = serviceData.hours.filter(item =>
+        (item.hour === currentHour || item.hour === currentHour - 1) 
       );
-
+  
       if (hourData.length > 0) {
-        const alertData = hourData.filter(item => item.pingenCount === 0 && item.pinverCount === 0);
-
+        // Check Pin Generation condition.
+        const alertData = hourData.filter(
+          item => item.pingenCount > 25 && item.pingenCountSuccess === 0
+        );
         if (alertData.length > 0) {
-          const message = `App Service Id ${serviceId}\nThere is no traffic for the last 2 hours`;
+          const message = `App Service Id ${serviceId}\nCheck Pin generation is getting failed`;
+          updateNotifications(serviceId, message);
+        }
+      }
+  
+      if (hourData.length > 0) {
+        // Check Pin Verification condition.
+        const alertData = hourData.filter(
+          item => item.pinverCount > 25 && item.pinverCountSuccess === 0
+        );
+        if (alertData.length > 0) {
+          const message = `App Service Id ${serviceId}\nCheck Pin verification is getting failed`;
           updateNotifications(serviceId, message);
         }
       }
     });
-
-    // Clean up expired notifications
     cleanExpiredNotifications();
   };
+  
 
-  // Check if pingenCount or pinverCount is 30 or more in the last 45 minutes, but pingenCountSuccess or pinverCountSuccess is 0
+  // Check additional alerts based on other conditions.
   const checkAdditionalAlert = () => {
-    const currentTime = new Date().getTime();
-    const fortyFiveMinutesAgo = currentTime - 45 * 60 * 1000; // 45 minutes in milliseconds
-
+    const currentTime = Date.now();
+    const fortyFiveMinutesAgo = currentTime - 45 * 60 * 1000; // 45 minutes in ms
     Object.keys(processdata).forEach(serviceId => {
       const serviceData = processdata[serviceId];
-      const hourData = serviceData.hours.filter(item => new Date().setHours(item.hour) >= fortyFiveMinutesAgo);
-
-      const alertData = hourData.filter(item => 
-        (item.pingenCount >= 30 || item.pinverCount >= 30) &&
-        (item.pingenCountSuccess === 0 || item.pinverCountSuccess === 0)
+      const hourData = serviceData.hours.filter(
+        item => new Date().setHours(item.hour) >= fortyFiveMinutesAgo
       );
-
+      const alertData = hourData.filter(
+        item =>
+          (item.pingenCount >= 50 || item.pinverCount >= 50) &&
+          (item.pingenCountSuccess === 0 || item.pinverCountSuccess === 0) 
+      );
       if (alertData.length > 0) {
-        const message = `App Service Id ${serviceId}\nPingenCount or PinverCount is 30 or more with 0 success count`;
+        const message = `App Service Id ${serviceId}\nPingenCount or PinverCount exceeds 50 with 0 success count`;
         updateNotifications(serviceId, message);
-        //add interval to trigger alert every 45 minutes
-        // eslint-disable-next-line
-        const intervalId = setInterval(() => {
-        window.alert(message);
-   }, 30*60*1000); // 45 minutes delays
+        // Set up a recurring popup for this specific service if not already running.
+        if (additionalAlertIntervals.current[serviceId]) {
+          clearInterval(additionalAlertIntervals.current[serviceId]);
+        }
+        additionalAlertIntervals.current[serviceId] = setInterval(() => {
+          updateNotifications(serviceId, message);
+        }, 30 * 60 * 1000); // every 30 minutes
       }
-    },[]);
+    });
   };
-  // Set up interval to check alerts every 45 minutes
+
+  // Set up an interval to check alerts every minute (or adjust as needed).
+  // (The checks themselves use the 30-min logic per service id.)
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (Object.keys(processdata).length > 0) {
         checkAlert();
-        checkAdditionalAlert(); // Check additional alerts
+        checkAdditionalAlert();
       }
-    }, .5 * 60 * 1000); // 45 minutes in milliseconds
-
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId);
-    // eslint-disable-next-line
+    }, 1 * 60 * 1000); // every 1 minute
+    return () => {
+      clearInterval(intervalId);
+      // Clear any additional alert intervals.
+      Object.values(additionalAlertIntervals.current).forEach(clearInterval);
+    };
   }, [processdata]);
 
   if (loading) {
     return <Loading />;
   }
-  const handleLogout = () => {
-    // Clear session storage
-    sessionStorage.removeItem('Requested Data');
-   // If you have other user data stored, clear that too
 
-    // Redirect to the login page
+  // Calculate unviewed notifications count.
+  const unviewedCount = Object.values(notifications).filter(n => n.viewed === false).length;
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('Requested Data');
     navigate('/login');
   };
+
   return (
     <>
       <div className="billex-main">
         <div className="table-one p-2">
           <div className="p-2">
             <div className="row">
-            <div className="head_black">
-               <img
-          src="file.png" 
-          alt=""
-          className="logo"
-        />
-        <h1 className="title">Globocom Support Monitoring</h1></div>
+              <div className="head_black">
+                <img src="file.png" alt="Logo" className="logo" />
+                <h1 className="title">Globocom Support Monitoring</h1>
+              </div>
               <div className="tabs">
-                {['all', 'inactive', 'notification'].map((tabName) => (
+                {['all', 'notification'].map(tabName => (
                   <button
                     key={tabName}
-                    onClick={() => setTab(tabName)}
+                    onClick={() => {
+                      setTab(tabName);
+                      if (tabName === 'notification') {
+                        viewNotifications();
+                      }
+                    }}
                     className={tab === tabName ? 'active' : ''}
                   >
-                    {tabName.charAt(0).toUpperCase() + tabName.slice(1)}
+                    {tabName === 'notification' ? (
+                      <div className="notification-tab">
+                        <FaBell className="notification-icon" />
+                        {unviewedCount > 0 && (
+                          <span className="notification-badge">{unviewedCount}</span>
+                        )}
+                      </div>
+                    ) : (
+                      tabName.charAt(0).toUpperCase() + tabName.slice(1)
+                    )}
                   </button>
                 ))}
-                <div className='tabs'>
-              <button className='logout' onClick={handleLogout}>
-              <FaSignOutAlt /></button>  
-                </div>
+                <button className="logout" onClick={handleLogout}>
+                  <FaSignOutAlt />
+                </button>
               </div>
-             
             </div>
           </div>
         </div>
       </div>
-    
+
       {tab === 'all' && <DataList data={data} />}
-      {tab === 'inactive' && <InactiveData data={data} />}
       {tab === 'notification' && (
         <div className="notifications-container">
           {Object.keys(notifications).length === 0 ? (
-            <p className="no-notifications">No Issue Here !.</p>
+            <p className="no-notifications"></p>
           ) : (
             Object.values(notifications).map((notification, index) => (
               <div key={index} className="notification-item">
                 <div className="notification-message">{notification.message}</div>
                 <div className="notification-timestamp">
-                  {new Date(notification.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                  {new Date(notification.timestamp).toLocaleTimeString([], {
+                    date: 'date',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
                 </div>
               </div>
             ))
           )}
         </div>
       )}
+      <ToastContainer />
     </>
   );
 };
