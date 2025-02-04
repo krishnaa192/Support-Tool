@@ -36,6 +36,7 @@ export const processDataByServiceId = (data) => {
             partner,
             billername,
             service_partner,
+            status,
             time,
             pingenCount,
             pingenCountSuccess,
@@ -55,7 +56,8 @@ export const processDataByServiceId = (data) => {
                     operator: operator || '',
                     partner: partner || '',
                     billername: billername || '',
-                    service_partner: service_partner || ''
+                    service_partner: service_partner || '',
+                    status: status || '',
                 },
                 // from 0 to current hour
                 hours: Array.from({ length: 24 }, (_, i) => ({

@@ -72,7 +72,7 @@ const GraphData = ({ isOpen, onClose, serviceId }) => {
   const pvCount = selectedData ? selectedData.hours.reduce((acc, curr) => acc + curr.pinverCount, 0) : 0;
   const pvsCount = selectedData ? selectedData.hours.reduce((acc, curr) => acc + curr.pinverCountSuccess, 0) : 0;
   const pinverOpt = selectedData?selectedData.hours?.reduce((acc, curr) => acc + curr.pinverOptCountSuccess, 0): 0;
-  console.log('pinverOpt', pinverOpt);
+  
 
 
   // Function to format the date to MM/DD/YYYY

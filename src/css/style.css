@@ -733,7 +733,7 @@ th, td {
   padding: 10px;
   text-align: center;
   border: 1px solid #ddd;
-min-width: 75px; 
+min-width: 100px; 
   white-space: nowrap; 
 }
 

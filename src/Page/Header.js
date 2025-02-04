@@ -4,7 +4,7 @@ import '../css/style.css';
 import '../css/header.css';
 import { processDataByServiceId } from '../utils';
 import { useNavigate } from 'react-router-dom';
-import { FaSignOutAlt, FaBell } from 'react-icons/fa';
+import { FaSignOutAlt, FaBell,FaTimes } from 'react-icons/fa';
 import { ApiRequest } from '../APi';
 import Loading from '../components/Loading';
 import { ToastContainer, toast } from 'react-toastify';
@@ -25,7 +25,7 @@ const Header = () => {
   // Function to remove notifications older than 5 hours.
   const cleanExpiredNotifications = () => {
     const currentTime = Date.now();
-    const fiveHoursAgo = currentTime - 8 * 60 * 60 * 1000; // 5 hours in ms
+    const fiveHoursAgo = currentTime - 8 * 60 * 60 * 1000; // 8 hours in ms
     const updatedNotifications = Object.fromEntries(
       Object.entries(notifications).filter(
         ([, { timestamp }]) => new Date(timestamp).getTime() > fiveHoursAgo
@@ -43,6 +43,7 @@ const Header = () => {
         const response = await ApiRequest();
         setData(response);
         setLoading(false);
+       
       } catch (error) {
         console.error('Error fetching data:', error);
         setLoading(false);
@@ -52,7 +53,8 @@ const Header = () => {
   }, []);
 
   const processdata = processDataByServiceId(data);
-  console.log(notifications);
+
+  
 
   // Update notifications with a new message and mark it as unviewed.
   // If a notification for the same serviceId was already shown in the last 30 minutes,
@@ -101,7 +103,8 @@ const Header = () => {
     Object.keys(processdata).forEach(serviceId => {
       const serviceData = processdata[serviceId];
   
-      // Filter items for the current or previous hour AND with status 'ACTIVE'
+      // Filter items for the current or previous hour AND with status 'ACTIVE
+       if (serviceData.info.status=== 'ACTIVE' ) {
       const hourData = serviceData.hours.filter(item =>
         (item.hour === currentHour || item.hour === currentHour - 1) 
       );
@@ -123,10 +126,11 @@ const Header = () => {
           item => item.pinverCount > 25 && item.pinverCountSuccess === 0
         );
         if (alertData.length > 0) {
-          const message = `App Service Id ${serviceId}\nCheck Pin verification is getting failed`;
+          const message = `App Service Id ${serviceId}\nCheck Pin verification is getting failed 5`;
           updateNotifications(serviceId, message);
         }
       }
+    }
     });
     cleanExpiredNotifications();
   };
@@ -137,28 +141,35 @@ const Header = () => {
     const currentTime = Date.now();
     const fortyFiveMinutesAgo = currentTime - 45 * 60 * 1000; // 45 minutes in ms
     Object.keys(processdata).forEach(serviceId => {
+    
       const serviceData = processdata[serviceId];
       const hourData = serviceData.hours.filter(
         item => new Date().setHours(item.hour) >= fortyFiveMinutesAgo
       );
-      const alertData = hourData.filter(
-        item =>
-          (item.pingenCount >= 50 || item.pinverCount >= 50) &&
-          (item.pingenCountSuccess === 0 || item.pinverCountSuccess === 0) 
-      );
-      if (alertData.length > 0) {
-        const message = `App Service Id ${serviceId}\nPingenCount or PinverCount exceeds 50 with 0 success count`;
-        updateNotifications(serviceId, message);
-        // Set up a recurring popup for this specific service if not already running.
-        if (additionalAlertIntervals.current[serviceId]) {
-          clearInterval(additionalAlertIntervals.current[serviceId]);
-        }
-        additionalAlertIntervals.current[serviceId] = setInterval(() => {
+ 
+      if (serviceData.info.status=== 'ACTIVE') {
+        const alertData = hourData.filter(
+          item =>
+            (item.pingenCount >= 50|| item.pinverCount >= 50) &&
+            (item.pingenCountSuccess === 0 || item.pinverCountSuccess === 0)
+        );
+      
+  
+        if (alertData.length > 0) {
+          const message = `App Service Id ${serviceId}\nPingenCount or PinverCount exceeds 50 with no success`;
           updateNotifications(serviceId, message);
-        }, 30 * 60 * 1000); // every 30 minutes
-      }
+          // Set up a recurring popup for this specific service if not already running.
+          if (additionalAlertIntervals.current[serviceId]) {
+            clearInterval(additionalAlertIntervals.current[serviceId]);
+          }
+          additionalAlertIntervals.current[serviceId] = setInterval(() => {
+            updateNotifications(serviceId, message);
+          }, 25 * 60 * 1000); // every 25 minutes
+        }
+      } 
     });
   };
+  
 
   // Set up an interval to check alerts every minute (or adjust as needed).
   // (The checks themselves use the 30-min logic per service id.)
@@ -168,7 +179,7 @@ const Header = () => {
         checkAlert();
         checkAdditionalAlert();
       }
-    }, 1 * 60 * 1000); // every 1 minute
+    }, 20 * 60 * 1000); // every 20 minute
     return () => {
       clearInterval(intervalId);
       // Clear any additional alert intervals.
@@ -187,6 +198,12 @@ const Header = () => {
     sessionStorage.removeItem('Requested Data');
     navigate('/login');
   };
+const clearNotification = () => {
+  setNotifications({});
+  localStorage.removeItem('notifications');
+  };
+
+
 
   return (
     <>
@@ -233,12 +250,15 @@ const Header = () => {
 
       {tab === 'all' && <DataList data={data} />}
       {tab === 'notification' && (
+        
         <div className="notifications-container">
+          <button onClick={clearNotification}>Clear</button>
           {Object.keys(notifications).length === 0 ? (
             <p className="no-notifications"></p>
           ) : (
             Object.values(notifications).map((notification, index) => (
               <div key={index} className="notification-item">
+               
                 <div className="notification-message">{notification.message}</div>
                 <div className="notification-timestamp">
                   {new Date(notification.timestamp).toLocaleTimeString([], {

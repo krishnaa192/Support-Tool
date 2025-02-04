@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import "../css/Barchart.css";
 
-const BarChart = ({ data, width = 800 }) => {
+const BarChart = ({ data, width = 650 }) => {
   const svgRef = useRef();
 
   useEffect(() => {
